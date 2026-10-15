@@ -4,666 +4,257 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pingüi - Tutor IA de Idiomas</title>
-
-  <!-- Configuración de PWA (App Instalable) -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#3b82f6">
-  <link rel="apple-touch-icon" href="/pinguina.jpg">
-
-  <!-- Librería de Confeti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #3b82f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
-    
-    .app-card { 
-      background: #ffffff; 
-      width: 100%; 
-      max-width: 420px; 
-      height: 750px; 
-      border-radius: 28px; 
-      display: flex; 
-      flex-direction: column; 
-      overflow: hidden; 
-      box-shadow: 0 16px 35px rgba(0,0,0,0.3); 
-      position: relative; 
-    }
-
-    /* PANTALLA PRINCIPAL DE INICIO (HOME) */
-    .home-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      height: 100%;
-      padding: 25px 20px;
-      background: linear-gradient(180deg, #e0f2fe 0%, #ffffff 60%);
-      text-align: center;
-    }
-
-    .home-header {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      background: white;
-      padding: 12px 18px;
-      border-radius: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      font-weight: bold;
-    }
-
-    .stat-box { display: flex; align-items: center; gap: 6px; font-size: 15px; }
-    .streak-val { color: #ff6b00; }
-    .xp-val { color: #28a745; }
-
-    .app-logo-area { margin-top: 10px; }
-    .app-title { font-size: 32px; font-weight: 900; color: #0284c7; letter-spacing: 1px; }
-    .app-subtitle { font-size: 14px; color: #64748b; margin-top: 2px; }
-
-    .level-badge {
-      background: #e0f2fe;
-      color: #0284c7;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-weight: 800;
-      font-size: 13px;
-      margin-top: 10px;
-      display: inline-block;
-      border: 1.5px solid #bae6fd;
-    }
-
-    .character-preview {
-      width: 130px;
-      height: 130px;
-      border-radius: 50%;
-      border: 4px solid #0284c7;
-      background: white;
-      overflow: hidden;
-      box-shadow: 0 8px 20px rgba(2,132,199,0.25);
-      margin: 15px 0;
-    }
-
-    .options-card {
-      background: white;
-      width: 100%;
-      padding: 18px;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      border: 1px solid #f1f5f9;
-    }
-
-    .option-group { display: flex; flex-direction: column; text-align: left; gap: 4px; }
-    .option-label { font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; }
-
-    .custom-select {
-      width: 100%;
-      padding: 10px 14px;
-      border-radius: 12px;
-      border: 2px solid #e2e8f0;
-      font-weight: bold;
-      color: #0f172a;
-      outline: none;
-      font-size: 14px;
-      background: #f8fafc;
-    }
-
-    .start-btn {
-      width: 100%;
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 16px;
-      border-radius: 20px;
-      font-size: 18px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(37,99,235,0.35);
-      transition: transform 0.2s, background 0.2s;
-    }
-    .start-btn:active { transform: scale(0.97); }
-
-    /* PANTALLA DE LECCIÓN / CHAT */
-    .chat-screen {
-      display: none;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .top-bar { background: #f8f9fa; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; font-weight: bold; }
-    .stat { display: flex; align-items: center; gap: 6px; font-size: 14px; }
-    .streak { color: #ff6b00; }
-    .xp { color: #28a745; }
-
-    .home-icon-btn { background: #e2e8f0; border: none; padding: 6px 12px; border-radius: 12px; font-size: 13px; cursor: pointer; font-weight: bold; }
-    .vocab-btn { background: #0284c7; color: white; border: none; padding: 5px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: bold; }
-
-    .avatar-stage { background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%); padding: 12px; text-align: center; border-bottom: 2px solid #93c5fd; display: flex; flex-direction: column; align-items: center; position: relative; }
-    
-    .tutor-selector { display: flex; gap: 8px; margin-bottom: 6px; }
-    .tutor-btn { background: #ffffff; border: 2px solid #0284c7; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 12px; color: #0284c7; cursor: pointer; }
-    .tutor-btn.active { background: #0284c7; color: white; }
-
-    .speed-btn {
-      position: absolute;
-      right: 15px;
-      top: 15px;
-      background: white;
-      border: 2px solid #0284c7;
-      border-radius: 50%;
-      width: 38px;
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .avatar-frame { 
-      width: 100px; 
-      height: 100px; 
-      border-radius: 50%; 
-      border: 4px solid #0284c7; 
-      overflow: hidden; 
-      position: relative; 
-      background: #fff;
-    }
-
-    .character-canvas { width: 100%; height: 100%; }
-    .avatar-frame.talking { border-color: #22c55e; animation: bounce 0.4s infinite alternate; }
-    .avatar-frame.thinking { border-color: #a855f7; }
-
-    @keyframes bounce {
-      from { transform: translateY(0); }
-      to { transform: translateY(-3px); }
-    }
-
-    .avatar-name { margin-top: 2px; font-size: 18px; font-weight: 800; color: #0f172a; }
-
-    .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
-    .msg-bubble { max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
-    .bot { background: #e0f2fe; color: #0369a1; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    .user { background: #2563eb; color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-
-    .controls { padding: 12px 15px; background: white; display: flex; gap: 8px; align-items: center; border-top: 1px solid #eee; }
-    .controls input { flex: 1; padding: 12px 16px; border: 1.5px solid #ccc; border-radius: 25px; outline: none; font-size: 14px; }
-    .send-btn { background: #2563eb; color: white; border: none; padding: 12px 18px; border-radius: 25px; cursor: pointer; font-weight: bold; }
-    .mic-btn { background: #ef4444; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; box-shadow: 0 4px 10px rgba(239,68,68,0.3); }
-
-    .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10; justify-content: center; align-items: center; }
-    .modal-content { background: white; width: 90%; height: 80%; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 16px; color: #0284c7; }
-    .close-modal { background: #ef4444; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold; }
-    .vocab-list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    .vocab-card { background: #f0f9ff; border: 1.5px solid #bae6fd; padding: 12px 14px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-    .vocab-text { font-weight: bold; color: #0369a1; word-break: break-word; flex: 1; margin-right: 10px; }
-    .vocab-actions { display: flex; gap: 6px; }
-    .audio-btn { background: #22c55e; color: white; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-    .delete-btn { background: #fee2e2; color: #ef4444; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
   </style>
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-2 sm:p-4">
 
-  <div class="app-card">
+  <div class="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col h-[90vh]">
     
-    <!-- PANTALLA PRINCIPAL / MENÚ INICIAL -->
-    <div class="home-screen" id="homeScreen">
-      <div class="home-header">
-        <div class="stat-box streak-val">🔥 Racha: <span id="homeStreak">1</span> d</div>
-        <div class="stat-box xp-val">⭐ XP: <span id="homeXp">0</span></div>
+    <!-- Encabezado / Header -->
+    <div class="bg-sky-500 text-white p-4 flex flex-col gap-2 shadow-md relative">
+      <div class="flex justify-between items-center text-xs font-bold">
+        <span class="bg-amber-400 text-slate-800 px-2 py-1 rounded-full flex items-center gap-1">
+          🔥 Racha: <span id="rachaVal">1</span> d
+        </span>
+        <button id="btnVocabulario" class="bg-sky-700 hover:bg-sky-800 text-white px-3 py-1 rounded-full text-xs transition">
+          📖 Vocabulario
+        </button>
+        <span class="bg-sky-700 text-white px-2 py-1 rounded-full flex items-center gap-1">
+          ⭐ XP: <span id="xpVal">40</span>
+        </span>
       </div>
 
-      <div class="app-logo-area">
-        <div class="app-title">Pingüi 🐧</div>
-        <div class="app-subtitle">Tu Tutor Inteligente de Idiomas</div>
-        <div class="level-badge" id="levelBadge">Nivel: Principiante 🐣</div>
-      </div>
-
-      <div class="character-preview">
-        <canvas id="homeCanvas" width="200" height="200" style="width: 100%; height: 100%;"></canvas>
-      </div>
-
-      <div class="options-card">
-        <div class="option-group">
-          <span class="option-label">Profesor</span>
-          <select class="custom-select" id="homeTutor" onchange="updateHomeCanvas()">
-            <option value="female">👩 Penny (Tutora)</option>
-            <option value="male">👨 Pingu (Tutor)</option>
-          </select>
+      <!-- Selección de Tutor y Velocidad -->
+      <div class="flex justify-between items-center mt-1">
+        <div class="flex bg-sky-600 p-1 rounded-xl gap-1">
+          <button id="btnPenny" onclick="seleccionarTutor('female')" class="px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow">
+            👩‍🏫 Tutora (Penny)
+          </button>
+          <button id="btnPingu" onclick="seleccionarTutor('male')" class="px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500">
+            🧑‍🏫 Tutor (Pingu)
+          </button>
         </div>
 
-        <div class="option-group">
-          <span class="option-label">Idioma objetivo</span>
-          <select class="custom-select" id="homeLang">
-            <option value="inglés" selected>Inglés 🇬🇧</option>
-            <option value="español">Español 🇪🇸</option>
-            <option value="francés">Francés 🇫🇷</option>
-            <option value="alemán">Alemán 🇩🇪</option>
-            <option value="italiano">Italiano 🇮🇹</option>
-            <option value="tagalo">Tagalo 🇵🇭</option>
-          </select>
-        </div>
+        <!-- Velocidad de Voz -->
+        <button id="btnVelocidad" onclick="cambiarVelocidad()" class="bg-sky-600 hover:bg-sky-700 p-2 rounded-full text-sm" title="Cambiar velocidad de voz">
+          🐇
+        </button>
+      </div>
 
-        <div class="option-group">
-          <span class="option-label">Tema de la lección</span>
-          <select class="custom-select" id="homeTopic">
-            <option value="General" selected>📚 Curso General</option>
-            <option value="Presentaciones">👋 Presentaciones</option>
-            <option value="Restaurante">🍕 En el Restaurante</option>
-            <option value="Viajes">✈️ De Viaje / Hotel</option>
-            <option value="Trabajo">💼 Entrevista de Trabajo</option>
+      <!-- Perfil del Tutor -->
+      <div class="flex flex-col items-center mt-2">
+        <div class="w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
+          <img id="avatarTutor" src="/pinguina.jpg" alt="Tutor" class="w-full h-full object-cover">
+        </div>
+        <h1 id="nombreTutor" class="text-xl font-bold mt-1">Penny 🐧</h1>
+        
+        <!-- Selectores de Idioma y Nivel -->
+        <div class="flex gap-2 mt-2 w-full px-4">
+          <select id="selectIdioma" class="bg-white text-slate-700 text-xs font-bold py-1 px-2 rounded-lg border w-1/2">
+            <option value="Inglés GB">Inglés GB</option>
+            <option value="Inglés US">Inglés US</option>
+            <option value="Francés">Francés</option>
+            <option value="Alemán">Alemán</option>
+            <option value="Italiano">Italiano</option>
+          </select>
+          <select id="selectNivel" class="bg-white text-slate-700 text-xs font-bold py-1 px-2 rounded-lg border w-1/2">
+            <option value="Curso General">📚 Curso General</option>
+            <option value="Principiante">🌱 Principiante (A1)</option>
+            <option value="Intermedio">🌿 Intermedio (B1)</option>
+            <option value="Avanzado">🌳 Avanzado (C1)</option>
           </select>
         </div>
       </div>
-
-      <button class="start-btn" onclick="startLesson()">¡Comenzar Lección! 🚀</button>
     </div>
 
-    <!-- PANTALLA DE LECCIÓN / CHAT INTERACTIVO -->
-    <div class="chat-screen" id="chatScreen">
-      <div class="top-bar">
-        <button class="home-icon-btn" onclick="goHome()">🏠 Menú</button>
-        <button class="vocab-btn" onclick="openVocabModal()">📖 Vocabulario</button>
-        <div class="stat xp">⭐ XP: <span id="xpCount">0</span></div>
-      </div>
-
-      <div class="avatar-stage">
-        <button class="speed-btn" id="speedBtn" onclick="toggleSpeechSpeed()" title="Ajustar velocidad de voz">🐇</button>
-
-        <div class="tutor-selector">
-          <button class="tutor-btn active" id="btnFemale" onclick="selectTutor('female')">👩 Tutora (Penny)</button>
-          <button class="tutor-btn" id="btnMale" onclick="selectTutor('male')">👨 Tutor (Pingu)</button>
-        </div>
-
-        <div class="avatar-frame" id="avatarFrame">
-          <canvas id="penguinCanvas" class="character-canvas" width="200" height="200"></canvas>
-        </div>
-        <div class="avatar-name" id="avatarName">Penny 🐧</div>
-      </div>
-
-      <div class="chat-messages" id="chat">
-        <div class="msg-bubble bot" id="welcomeMsg">¡Hola! Soy Penny 🐧, tu profesora inteligente. ¡Háblame y aprendamos juntos!</div>
-      </div>
-
-      <div class="controls">
-        <button class="mic-btn" onclick="toggleMic()">🎙️</button>
-        <input type="text" id="userInput" placeholder="Escribe o habla..." onkeypress="if(event.key==='Enter') sendMsg()">
-        <button class="send-btn" onclick="sendMsg()">Enviar</button>
-      </div>
-
-      <div class="modal" id="vocabModal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <span>📖 Repaso de Vocabulario</span>
-            <button class="close-modal" onclick="closeVocabModal()">✕</button>
-          </div>
-          <div class="vocab-list-container" id="vocabList"></div>
+    <!-- Área de Chat -->
+    <div id="chatBox" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50">
+      <div class="flex gap-2 items-start">
+        <div class="bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm">
+          ¡Hola! Soy <span id="saludoNombre">Penny</span> 🐧, tu profesora inteligente. ¡HÁblame y aprendamos juntos!
         </div>
       </div>
+    </div>
+
+    <!-- Entrada de Texto -->
+    <div class="p-3 bg-white border-t flex items-center gap-2">
+      <button id="btnVoz" onclick="activarMicrofono()" class="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow transition flex-shrink-0">
+        🎙️
+      </button>
+      <input type="text" id="userInput" placeholder="Escribe o habla..." class="flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-sky-500" onkeypress="handleKeyPress(event)">
+      <button onclick="enviarMensaje()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-bold text-sm shadow transition flex-shrink-0">
+        Enviar
+      </button>
     </div>
 
   </div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('Service Worker registrado', reg))
-          .catch(err => console.log('Error en Service Worker', err));
-      });
-    }
+    let tutorActual = 'female';
+    let velocidadVoz = 1.0;
+    let xp = 40;
+    let racha = 1;
 
-    let totalXp = parseInt(localStorage.getItem('pingui_xp')) || 0;
-    let streakDays = parseInt(localStorage.getItem('pingui_streak')) || 1;
-    let lastVisit = localStorage.getItem('pingui_last_visit');
-    let vocabWords = JSON.parse(localStorage.getItem('pingui_vocab')) || [];
-    let isSlowSpeed = false;
-    let currentGender = 'female';
-    let currentEmotion = 'idle';
-    let isBlinking = false;
-    let mouthStep = 0;
-
-    function checkStreak() {
-      const today = new Date().toDateString();
-      if (lastVisit) {
-        const lastDate = new Date(lastVisit);
-        const currentDate = new Date();
-        const diffDays = Math.ceil(Math.abs(currentDate - lastDate) / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 1 && lastVisit !== today) {
-          streakDays += 1;
-          localStorage.setItem('pingui_streak', streakDays);
-        } else if (diffDays > 2) {
-          streakDays = 1;
-          localStorage.setItem('pingui_streak', streakDays);
-        }
+    // Activar audio al tocar pantalla en móviles
+    document.body.addEventListener('click', () => {
+      if ('speechSynthesis' in window && window.speechSynthesis.speaking === false) {
+        window.speechSynthesis.resume();
       }
-      localStorage.setItem('pingui_last_visit', today);
-      updateStatsUI();
-    }
+    }, { once: true });
 
-    function updateStatsUI() {
-      document.getElementById('homeXp').innerText = totalXp;
-      document.getElementById('homeStreak').innerText = streakDays;
-      document.getElementById('xpCount').innerText = totalXp;
+    function seleccionarTutor(genero) {
+      tutorActual = genero;
+      const avatar = document.getElementById('avatarTutor');
+      const nombre = document.getElementById('nombreTutor');
+      const saludoNombre = document.getElementById('saludoNombre');
+      const btnPenny = document.getElementById('btnPenny');
+      const btnPingu = document.getElementById('btnPingu');
 
-      // Calcular Nivel según XP
-      const badge = document.getElementById('levelBadge');
-      if (totalXp < 100) badge.innerText = 'Nivel: Principiante 🐣';
-      else if (totalXp < 300) badge.innerText = 'Nivel: Estudiante 📚';
-      else if (totalXp < 600) badge.innerText = 'Nivel: Avanzado ⭐';
-      else badge.innerText = 'Nivel: Experto 👑';
-    }
-
-    function addXP(points) {
-      totalXp += points;
-      localStorage.setItem('pingui_xp', totalXp);
-      updateStatsUI();
-
-      if (typeof confetti === 'function') {
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-      }
-    }
-
-    // NAVEGACIÓN
-    function startLesson() {
-      const tutor = document.getElementById('homeTutor').value;
-      selectTutor(tutor);
-
-      document.getElementById('homeScreen').style.display = 'none';
-      document.getElementById('chatScreen').style.display = 'flex';
-
-      const topic = document.getElementById('homeTopic').value;
-      if (topic !== 'General') {
-        document.getElementById('userInput').value = `¡Hola! Quiero empezar el módulo de: ${topic}.`;
-        sendMsg();
-      }
-    }
-
-    function goHome() {
-      document.getElementById('chatScreen').style.display = 'none';
-      document.getElementById('homeScreen').style.display = 'flex';
-      updateHomeCanvas();
-    }
-
-    // CANVAS DIBUJO Y ANIMACIÓN
-    const canvas = document.getElementById('penguinCanvas');
-    const ctx = canvas.getContext('2d');
-    const homeCanvas = document.getElementById('homeCanvas');
-    const homeCtx = homeCanvas.getContext('2d');
-
-    function drawPenguinOnCtx(targetCtx, gender) {
-      targetCtx.clearRect(0, 0, 200, 200);
-
-      targetCtx.beginPath();
-      targetCtx.arc(100, 100, 80, 0, Math.PI * 2);
-      targetCtx.fillStyle = '#1e293b';
-      targetCtx.fill();
-
-      targetCtx.beginPath();
-      targetCtx.ellipse(100, 110, 55, 60, 0, 0, Math.PI * 2);
-      targetCtx.fillStyle = '#ffffff';
-      targetCtx.fill();
-
-      if (gender === 'female') {
-        targetCtx.fillStyle = '#ec4899';
-        targetCtx.beginPath();
-        targetCtx.arc(145, 50, 14, 0, Math.PI * 2);
-        targetCtx.arc(120, 55, 10, 0, Math.PI * 2);
-        targetCtx.fill();
+      if (genero === 'female') {
+        avatar.src = '/pinguina.jpg';
+        nombre.textContent = 'Penny 🐧';
+        saludoNombre.textContent = 'Penny';
+        btnPenny.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow';
+        btnPingu.className = 'px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500';
       } else {
-        targetCtx.fillStyle = '#f97316';
-        targetCtx.beginPath();
-        targetCtx.arc(35, 90, 18, 0, Math.PI * 2);
-        targetCtx.arc(165, 90, 18, 0, Math.PI * 2);
-        targetCtx.fill();
-        targetCtx.lineWidth = 6;
-        targetCtx.strokeStyle = '#f97316';
-        targetCtx.beginPath();
-        targetCtx.arc(100, 90, 68, Math.PI, 0, false);
-        targetCtx.stroke();
+        avatar.src = '/pinguino.jpg';
+        nombre.textContent = 'Pingu 🐧';
+        saludoNombre.textContent = 'Pingu';
+        btnPingu.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow';
+        btnPenny.className = 'px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500';
       }
+    }
 
-      targetCtx.fillStyle = '#0f172a';
-      let eyeY = 85;
-
-      if (currentEmotion === 'thinking' && targetCtx === ctx) {
-        targetCtx.beginPath();
-        targetCtx.arc(75, eyeY - 5, 10, 0, Math.PI * 2);
-        targetCtx.arc(125, eyeY - 5, 10, 0, Math.PI * 2);
-        targetCtx.fill();
-      } else if (!isBlinking) {
-        targetCtx.beginPath();
-        targetCtx.arc(75, eyeY, 11, 0, Math.PI * 2);
-        targetCtx.arc(125, eyeY, 11, 0, Math.PI * 2);
-        targetCtx.fill();
-
-        targetCtx.fillStyle = '#ffffff';
-        targetCtx.beginPath();
-        targetCtx.arc(72, eyeY - 4, 4, 0, Math.PI * 2);
-        targetCtx.arc(122, eyeY - 4, 4, 0, Math.PI * 2);
-        targetCtx.fill();
+    function cambiarVelocidad() {
+      const btn = document.getElementById('btnVelocidad');
+      if (velocidadVoz === 1.0) {
+        velocidadVoz = 0.7;
+        btn.textContent = '🐢';
+        btn.title = 'Voz Lenta';
       } else {
-        targetCtx.lineWidth = 4;
-        targetCtx.strokeStyle = '#0f172a';
-        targetCtx.beginPath();
-        targetCtx.moveTo(65, eyeY); targetCtx.lineTo(85, eyeY);
-        targetCtx.moveTo(115, eyeY); targetCtx.lineTo(135, eyeY);
-        targetCtx.stroke();
-      }
-
-      targetCtx.fillStyle = '#f97316';
-      if (currentEmotion === 'talking' && targetCtx === ctx) {
-        let openAmount = 8 + Math.sin(mouthStep) * 10;
-        targetCtx.beginPath();
-        targetCtx.moveTo(80, 105); targetCtx.lineTo(120, 105); targetCtx.lineTo(100, 115 - openAmount/2);
-        targetCtx.closePath(); targetCtx.fill();
-
-        targetCtx.beginPath();
-        targetCtx.moveTo(82, 105); targetCtx.lineTo(118, 105); targetCtx.lineTo(100, 118 + openAmount);
-        targetCtx.closePath(); targetCtx.fill();
-      } else {
-        targetCtx.beginPath();
-        targetCtx.moveTo(80, 105); targetCtx.lineTo(120, 105); targetCtx.lineTo(100, 122);
-        targetCtx.closePath(); targetCtx.fill();
+        velocidadVoz = 1.0;
+        btn.textContent = '🐇';
+        btn.title = 'Voz Normal';
       }
     }
 
-    function updateHomeCanvas() {
-      const gender = document.getElementById('homeTutor').value;
-      drawPenguinOnCtx(homeCtx, gender);
-    }
+    function hablar(texto) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(texto);
+        const idioma = document.getElementById('selectIdioma').value;
+        
+        if (idioma.includes('GB')) utterance.lang = 'en-GB';
+        else if (idioma.includes('US')) utterance.lang = 'en-US';
+        else if (idioma.includes('Francés')) utterance.lang = 'fr-FR';
+        else if (idioma.includes('Alemán')) utterance.lang = 'de-DE';
+        else if (idioma.includes('Italiano')) utterance.lang = 'it-IT';
+        else utterance.lang = 'en-US';
 
-    function renderLoop() {
-      if (currentEmotion === 'talking') mouthStep += 0.25;
-      drawPenguinOnCtx(ctx, currentGender);
-      requestAnimationFrame(renderLoop);
-    }
-    renderLoop();
-    updateHomeCanvas();
-
-    setInterval(() => {
-      isBlinking = true;
-      setTimeout(() => { isBlinking = false; }, 180);
-    }, 3200);
-
-    function selectTutor(gender) {
-      currentGender = gender;
-      document.getElementById('btnFemale').classList.toggle('active', gender === 'female');
-      document.getElementById('btnMale').classList.toggle('active', gender === 'male');
-
-      const avatarName = document.getElementById('avatarName');
-      const welcomeMsg = document.getElementById('welcomeMsg');
-
-      if (gender === 'female') {
-        avatarName.innerText = 'Penny 🐧';
-        welcomeMsg.innerText = '¡Hola! Soy Penny 🐧, tu profesora inteligente. ¡Háblame y aprendamos juntos!';
-      } else {
-        avatarName.innerText = 'Pingu 🐧';
-        welcomeMsg.innerText = '¡Hola! Soy Pingu 🐧, tu profesor inteligente. ¡Háblame y aprendamos juntos!';
+        utterance.rate = velocidadVoz;
+        window.speechSynthesis.speak(utterance);
       }
     }
 
-    // VOCABULARIO
-    function saveVocabWord(word) {
-      if (!vocabWords.includes(word) && word.length > 2) {
-        vocabWords.push(word);
-        localStorage.setItem('pingui_vocab', JSON.stringify(vocabWords));
-      }
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') enviarMensaje();
     }
 
-    function deleteVocabWord(index) {
-      vocabWords.splice(index, 1);
-      localStorage.setItem('pingui_vocab', JSON.stringify(vocabWords));
-      openVocabModal();
-    }
-
-    function openVocabModal() {
-      const list = document.getElementById('vocabList');
-      if (vocabWords.length === 0) {
-        list.innerHTML = '<p style="font-size: 13px; color: #666; text-align: center; margin-top: 20px;">Aún no se han guardado palabras. Practica respondiendo las lecciones.</p>';
-      } else {
-        const lang = document.getElementById('homeLang').value;
-        list.innerHTML = vocabWords.map((w, idx) => `
-          <div class="vocab-card">
-            <div class="vocab-text">📌 ${w}</div>
-            <div class="vocab-actions">
-              <button class="audio-btn" onclick="speakCleanText('${w.replace(/'/g, "\\'")}', '${lang}')">🔊</button>
-              <button class="delete-btn" onclick="deleteVocabWord(${idx})">🗑️</button>
-            </div>
-          </div>
-        `).join('');
-      }
-      document.getElementById('vocabModal').style.display = 'flex';
-    }
-
-    function closeVocabModal() {
-      document.getElementById('vocabModal').style.display = 'none';
-    }
-
-    checkStreak();
-
-    function toggleSpeechSpeed() {
-      isSlowSpeed = !isSlowSpeed;
-      document.getElementById('speedBtn').innerText = isSlowSpeed ? '🐢' : '🐇';
-    }
-
-    let voices = [];
-    function loadVoices() {
-      if ('speechSynthesis' in window) voices = speechSynthesis.getVoices();
-    }
-    loadVoices();
-    if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
-
-    async function sendMsg() {
+    async function enviarMensaje() {
       const input = document.getElementById('userInput');
       const text = input.value.trim();
-      const lang = document.getElementById('homeLang').value;
-
       if (!text) return;
 
-      addMessage(text, 'user');
-      input.value = '';
+      const chatBox = document.getElementById('chatBox');
+      
+      // Añadir mensaje del usuario
+      const userDiv = document.createElement('div');
+      userDiv.className = 'flex justify-end';
+      userDiv.innerHTML = `<div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] text-sm shadow-sm">${text}</div>`;
+      chatBox.appendChild(userDiv);
 
-      const botMsgDiv = addMessage('', 'bot');
-      currentEmotion = 'thinking';
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Crear contenedor de respuesta del tutor
+      const tutorDiv = document.createElement('div');
+      tutorDiv.className = 'flex gap-2 items-start';
+      const msgBubble = document.createElement('div');
+      msgBubble.className = 'bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm';
+      msgBubble.textContent = 'Pensando...';
+      tutorDiv.appendChild(msgBubble);
+      chatBox.appendChild(tutorDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
         const response = await fetch('/api/chat-stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, targetLanguage: lang, gender: currentGender })
+          body: JSON.stringify({
+            message: text,
+            targetLanguage: document.getElementById('selectIdioma').value,
+            gender: tutorActual
+          })
         });
+
+        if (!response.ok) throw new Error('Error en la respuesta');
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullText = '';
+        msgBubble.textContent = '';
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
           const chunk = decoder.decode(value, { stream: true });
           fullText += chunk;
-          botMsgDiv.innerText = fullText;
-          const chat = document.getElementById('chat');
-          chat.scrollTop = chat.scrollHeight;
+          msgBubble.textContent = fullText;
+          chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        currentEmotion = 'idle';
-        addXP(20);
-        saveVocabWord(text);
-        speakCleanText(fullText, lang);
+        // Reproducir la respuesta por voz
+        hablar(fullText);
 
-      } catch (e) {
-        currentEmotion = 'idle';
-        botMsgDiv.innerText = 'Ocurrió un problema de conexión.';
+        // Sumar XP
+        xp += 10;
+        document.getElementById('xpVal').textContent = xp;
+
+      } catch (err) {
+        msgBubble.textContent = 'Error interno del servidor al procesar la respuesta.';
       }
     }
 
-    function addMessage(text, sender) {
-      const chat = document.getElementById('chat');
-      const div = document.createElement('div');
-      div.className = `msg-bubble ${sender}`;
-      div.innerText = text;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-      return div;
-    }
-
-    function speakCleanText(text, targetLang) {
-      if (!('speechSynthesis' in window)) return;
-      speechSynthesis.cancel();
-
-      let cleanText = text
-        .replace(/\*/g, '').replace(/\[.*?\]/g, '')
-        .replace(/[\"#\$%&'\(\)\+\/<=>@\\^_`\{\|\}~]/g, '')
-        .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
-        .trim();
-
-      if (!cleanText) return;
-      if (voices.length === 0) voices = speechSynthesis.getVoices();
-
-      const isFemale = currentGender === 'female';
-      let selectedVoice = voices.find(v => (v.lang.startsWith('es') || v.lang.startsWith('en')) && (
-        isFemale ? (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('monica') || v.name.toLowerCase().includes('helena') || v.name.toLowerCase().includes('zira'))
-                 : (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('david'))
-      )) || voices[0];
-
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-        utterance.lang = selectedVoice.lang;
+    function activarMicrofono() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Tu navegador no soporta el reconocimiento de voz.');
+        return;
       }
-
-      utterance.rate = isSlowSpeed ? 0.58 : 0.82;
-      utterance.pitch = isFemale ? 1.3 : 0.7;
-
-      utterance.onstart = () => { currentEmotion = 'talking'; };
-      utterance.onend = () => { currentEmotion = 'idle'; };
-      utterance.onerror = () => { currentEmotion = 'idle'; };
-
-      speechSynthesis.speak(utterance);
-    }
-
-    let recognition;
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.onresult = (e) => {
-        document.getElementById('userInput').value = e.results[0][0].transcript;
-        sendMsg();
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'es-ES';
+      recognition.onstart = () => {
+        document.getElementById('btnVoz').className = 'bg-green-500 text-white p-3 rounded-full shadow animate-pulse flex-shrink-0';
       };
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        document.getElementById('userInput').value = text;
+        enviarMensaje();
+      };
+      recognition.onend = () => {
+        document.getElementById('btnVoz').className = 'bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow transition flex-shrink-0';
+      };
+      recognition.start();
     }
 
-    function toggleMic() {
-      if (recognition) recognition.start();
-      else alert('Reconocimiento de voz no soportado.');
+    // Registrar Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
     }
   </script>
 </body>
