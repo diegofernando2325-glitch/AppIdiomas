@@ -97,8 +97,20 @@
     let tutorActual = 'female';
     let velocidadVoz = 1.0;
     let xp = 40;
+    let vocesDisponibles = [];
 
-    // Activar reproductor de voz al tocar la pantalla en móviles
+    // Cargar voces del sistema
+    function cargarVoces() {
+      if ('speechSynthesis' in window) {
+        vocesDisponibles = window.speechSynthesis.getVoices();
+      }
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = cargarVoces;
+      cargarVoces();
+    }
+
+    // Activar audio en móviles con el primer toque
     document.body.addEventListener('click', () => {
       if ('speechSynthesis' in window && window.speechSynthesis.speaking === false) {
         window.speechSynthesis.resume();
@@ -141,36 +153,64 @@
       }
     }
 
-    // LIMPIAR ASTERISCOS Y SÍMBOLOS ANTES DE HABLAR
+    // Limpia caracteres de formato
     function limpiarTextoParaVoz(texto) {
       if (!texto) return '';
       return texto
-        .replace(/\*/g, '')         // Elimina absolutamente todos los asteriscos
-        .replace(/#/g, '')          // Elimina almohadillas
-        .replace(/_/g, '')          // Elimina guiones bajos
-        .replace(/[\(\)\[\]]/g, '') // Elimina paréntesis y corchetes
-        .replace(/\s+/g, ' ')       // Elimina espacios múltiples
+        .replace(/[\*\#\_]/g, '')
+        .replace(/[\(\)\[\]]/g, '')
+        .replace(/\s+/g, ' ')
         .trim();
     }
 
-    function hablar(texto) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        
-        const textoLimpio = limpiarTextoParaVoz(texto);
-        const utterance = new SpeechSynthesisUtterance(textoLimpio);
-        const idioma = document.getElementById('selectIdioma').value;
-        
-        if (idioma.includes('GB')) utterance.lang = 'en-GB';
-        else if (idioma.includes('US')) utterance.lang = 'en-US';
-        else if (idioma.includes('Francés')) utterance.lang = 'fr-FR';
-        else if (idioma.includes('Alemán')) utterance.lang = 'de-DE';
-        else if (idioma.includes('Italiano')) utterance.lang = 'it-IT';
-        else utterance.lang = 'en-US';
+    // Identifica el código de idioma nativo para cada fragmento
+    function obtenerCodigoIdiomaObjetivo() {
+      const id = document.getElementById('selectIdioma').value;
+      if (id.includes('GB')) return 'en-GB';
+      if (id.includes('US')) return 'en-US';
+      if (id.includes('Francés')) return 'fr-FR';
+      if (id.includes('Alemán')) return 'de-DE';
+      if (id.includes('Italiano')) return 'it-IT';
+      return 'en-US';
+    }
 
-        utterance.rate = velocidadVoz;
-        window.speechSynthesis.speak(utterance);
+    function reproducirFragmento(texto, langCode) {
+      if (!('speechSynthesis' in window) || !texto) return;
+
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = langCode;
+      utterance.rate = velocidadVoz;
+
+      // Asignar voz nativa correspondiente
+      if (vocesDisponibles.length > 0) {
+        const vozNativa = vocesDisponibles.find(v => v.lang.startsWith(langCode.substring(0, 2)));
+        if (vozNativa) utterance.voice = vozNativa;
       }
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Divide la respuesta en oraciones y lee cada una en su idioma nativo
+    function hablarFluido(textoCompleto) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const textoLimpio = limpiarTextoParaVoz(textoCompleto);
+      const targetLang = obtenerCodigoIdiomaObjetivo();
+
+      // Separa por oraciones completas
+      const oraciones = textoLimpio.match(/[^.!?]+[.!?]+/g) || [textoLimpio];
+
+      oraciones.forEach(oracion => {
+        const o = oracion.trim();
+        if (!o) return;
+
+        // Si la frase contiene caracteres de español habituales o palabras clave en español, lee en español nativo
+        const esEspanol = /[áéíóúñ¿¡]/i.test(o) || /^(hola|bien|excelente|muy|correcto|tu|tu respuesta|recordemos|profesor|profesora)/i.test(o);
+        const langCode = esEspanol ? 'es-ES' : targetLang;
+
+        reproducirFragmento(o, langCode);
+      });
     }
 
     function handleKeyPress(e) {
@@ -186,4 +226,84 @@
       
       const userDiv = document.createElement('div');
       userDiv.className = 'flex justify-end';
-      userDiv.innerHTML = `<div class="bg-blue-600 text-white p-3 rounded-2xl rounded-
+      userDiv.innerHTML = `<div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] text-sm shadow-sm">${text}</div>`;
+      chatBox.appendChild(userDiv);
+
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      const tutorDiv = document.createElement('div');
+      tutorDiv.className = 'flex gap-2 items-start';
+      const msgBubble = document.createElement('div');
+      msgBubble.className = 'bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm';
+      msgBubble.textContent = 'Pensando...';
+      tutorDiv.appendChild(msgBubble);
+      chatBox.appendChild(tutorDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const response = await fetch('/api/chat-stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            targetLanguage: document.getElementById('selectIdioma').value,
+            gender: tutorActual
+          })
+        });
+
+        if (!response.ok) throw new Error('Error en la respuesta');
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '';
+        msgBubble.textContent = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          fullText += chunk;
+          msgBubble.textContent = fullText;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Reproduce cada frase en su idioma nativo exacto
+        hablarFluido(fullText);
+
+        xp += 10;
+        document.getElementById('xpVal').textContent = xp;
+
+      } catch (err) {
+        msgBubble.textContent = 'Error interno del servidor al procesar la respuesta.';
+      }
+    }
+
+    function activarMicrofono() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Tu navegador no soporta el reconocimiento de voz.');
+        return;
+      }
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'es-ES';
+      recognition.onstart = () => {
+        document.getElementById('btnVoz').className = 'bg-green-500 text-white p-3 rounded-full shadow animate-pulse flex-shrink-0';
+      };
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        document.getElementById('userInput').value = text;
+        enviarMensaje();
+      };
+      recognition.onend = () => {
+        document.getElementById('btnVoz').className = 'bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow transition flex-shrink-0';
+      };
+      recognition.start();
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>
