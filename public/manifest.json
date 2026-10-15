@@ -1,9 +1,15 @@
 {
   "short_name": "Pingüi",
   "name": "Pingüi - Tutor IA de Idiomas",
+  "description": "Tu tutor inteligente de idiomas con inteligencia artificial interactiva.",
   "icons": [
     {
-      "src": "pinguina.jpg",
+      "src": "/pinguina.jpg",
+      "type": "image/jpeg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/pinguino.jpg",
       "type": "image/jpeg",
       "sizes": "512x512"
     }
