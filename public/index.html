@@ -40,7 +40,6 @@
           </button>
         </div>
 
-        <!-- Velocidad de Voz -->
         <button id="btnVelocidad" onclick="cambiarVelocidad()" class="bg-sky-600 hover:bg-sky-700 p-2 rounded-full text-sm" title="Cambiar velocidad de voz">
           🐇
         </button>
@@ -76,7 +75,7 @@
     <div id="chatBox" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50">
       <div class="flex gap-2 items-start">
         <div class="bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm">
-          ¡Hola! Soy <span id="saludoNombre">Penny</span> 🐧, tu profesora inteligente. ¡HÁblame y aprendamos juntos!
+          ¡Hola! Soy <span id="saludoNombre">Penny</span> 🐧, tu profesora inteligente. ¡Háblame y aprendamos juntos!
         </div>
       </div>
     </div>
@@ -98,9 +97,8 @@
     let tutorActual = 'female';
     let velocidadVoz = 1.0;
     let xp = 40;
-    let racha = 1;
 
-    // Activar audio al tocar pantalla en móviles
+    // Activar reproductor de voz al tocar pantalla en móvil
     document.body.addEventListener('click', () => {
       if ('speechSynthesis' in window && window.speechSynthesis.speaking === false) {
         window.speechSynthesis.resume();
@@ -143,10 +141,20 @@
       }
     }
 
+    // LIMPIAR ASTERRISCOS Y SÍMBOLOS ANTES DE HABLAR
+    function limpiarTextoParaVoz(texto) {
+      return texto
+        .replace(/[\*\#\_]/g, '') // Elimina *, #, _
+        .replace(/[\(\)\[\]]/g, '') // Elimina paréntesis y corchetes
+        .trim();
+    }
+
     function hablar(texto) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(texto);
+        
+        const textoLimpio = limpiarTextoParaVoz(texto);
+        const utterance = new SpeechSynthesisUtterance(textoLimpio);
         const idioma = document.getElementById('selectIdioma').value;
         
         if (idioma.includes('GB')) utterance.lang = 'en-GB';
@@ -172,7 +180,6 @@
 
       const chatBox = document.getElementById('chatBox');
       
-      // Añadir mensaje del usuario
       const userDiv = document.createElement('div');
       userDiv.className = 'flex justify-end';
       userDiv.innerHTML = `<div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] text-sm shadow-sm">${text}</div>`;
@@ -181,7 +188,6 @@
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Crear contenedor de respuesta del tutor
       const tutorDiv = document.createElement('div');
       tutorDiv.className = 'flex gap-2 items-start';
       const msgBubble = document.createElement('div');
@@ -218,10 +224,9 @@
           chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Reproducir la respuesta por voz
+        // Hablar sin leer asteriscos ni símbolos
         hablar(fullText);
 
-        // Sumar XP
         xp += 10;
         document.getElementById('xpVal').textContent = xp;
 
@@ -252,7 +257,6 @@
       recognition.start();
     }
 
-    // Registrar Service Worker para PWA
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
     }
