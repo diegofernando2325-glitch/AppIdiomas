@@ -4,309 +4,344 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pingüi - Tutor IA de Idiomas</title>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#3b82f6">
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #3b97ea;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    /* --- VISTA 1: CONFIGURACIÓN / INICIO --- */
+    #view-setup {
+      background: #f0f4f8;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 25px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      text-align: center;
+    }
+
+    .top-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .stat-badge {
+      background: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      color: #d9534f;
+    }
+
+    .stat-badge.xp {
+      color: #337ab7;
+    }
+
+    .avatar-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #4a90e2;
+      margin: 15px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      overflow: hidden;
+    }
+
+    .avatar-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #777;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      background: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .btn-start {
+      width: 100%;
+      background: #509eed;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: background 0.2s;
+    }
+
+    .btn-start:hover {
+      background: #3b82d6;
+    }
+
+    /* --- VISTA 2: CHAT INTERACTIVO --- */
+    #view-chat {
+      display: none; /* Oculto por defecto */
+      background: #fff;
+      width: 100%;
+      max-width: 420px;
+      height: 90vh;
+      max-height: 700px;
+      border-radius: 25px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      flex-direction: column;
+    }
+
+    .chat-header {
+      background: #179be6;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      position: relative;
+    }
+
+    .btn-back {
+      position: absolute;
+      left: 15px;
+      top: 15px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .chat-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #fff;
+      margin: 10px auto 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 35px;
+    }
+
+    .chat-body {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .message.bot {
+      background: #e1f0ff;
+      color: #1a4a75;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.user {
+      background: #509eed;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-footer {
+      padding: 10px 15px;
+      background: #fff;
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid #eee;
+    }
+
+    .chat-footer input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      outline: none;
+    }
+
+    .chat-footer button {
+      background: #2b7bc0;
+      color: white;
+      border: none;
+      padding: 0 18px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-2 sm:p-4">
+<body>
 
-  <div class="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col h-[90vh]">
-    
-    <!-- Encabezado / Header -->
-    <div class="bg-sky-500 text-white p-4 flex flex-col gap-2 shadow-md relative">
-      <div class="flex justify-between items-center text-xs font-bold">
-        <span class="bg-amber-400 text-slate-800 px-2 py-1 rounded-full flex items-center gap-1">
-          🔥 Racha: <span id="rachaVal">1</span> d
-        </span>
-        <button id="btnVocabulario" class="bg-sky-700 hover:bg-sky-800 text-white px-3 py-1 rounded-full text-xs transition">
-          📖 Vocabulario
-        </button>
-        <span class="bg-sky-700 text-white px-2 py-1 rounded-full flex items-center gap-1">
-          ⭐ XP: <span id="xpVal">40</span>
-        </span>
-      </div>
+  <!-- VENTANA 1: CONFIGURACIÓN -->
+  <div id="view-setup">
+    <div class="top-stats">
+      <span class="stat-badge">🔥 Racha: 1 d</span>
+      <span class="stat-badge xp">⭐ XP: 40</span>
+    </div>
 
-      <!-- Selección de Tutor y Velocidad -->
-      <div class="flex justify-between items-center mt-1">
-        <div class="flex bg-sky-600 p-1 rounded-xl gap-1">
-          <button id="btnPenny" onclick="seleccionarTutor('female')" class="px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow">
-            👩‍🏫 Tutora (Penny)
-          </button>
-          <button id="btnPingu" onclick="seleccionarTutor('male')" class="px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500">
-            🧑‍🏫 Tutor (Pingu)
-          </button>
-        </div>
+    <h2 style="color: #2c3e50;">Pingüi 🐧</h2>
+    <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 5px;">Tu Tutor Inteligente de Idiomas</p>
+    <span style="font-size: 12px; background: #e0e0e0; padding: 2px 8px; border-radius: 10px;">Nivel: Principiante 🐣</span>
 
-        <button id="btnVelocidad" onclick="cambiarVelocidad()" class="bg-sky-600 hover:bg-sky-700 p-2 rounded-full text-sm" title="Cambiar velocidad de voz">
-          🐇
-        </button>
-      </div>
+    <div class="avatar-circle">
+      🐧
+    </div>
 
-      <!-- Perfil del Tutor -->
-      <div class="flex flex-col items-center mt-2">
-        <div class="w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
-          <img id="avatarTutor" src="/pinguina.jpg" alt="Tutor" class="w-full h-full object-cover">
-        </div>
-        <h1 id="nombreTutor" class="text-xl font-bold mt-1">Penny 🐧</h1>
-        
-        <!-- Selectores de Idioma y Nivel -->
-        <div class="flex gap-2 mt-2 w-full px-4">
-          <select id="selectIdioma" class="bg-white text-slate-700 text-xs font-bold py-1 px-2 rounded-lg border w-1/2">
-            <option value="Inglés GB">Inglés GB</option>
-            <option value="Inglés US">Inglés US</option>
-            <option value="Francés">Francés</option>
-            <option value="Alemán">Alemán</option>
-            <option value="Italiano">Italiano</option>
-          </select>
-          <select id="selectNivel" class="bg-white text-slate-700 text-xs font-bold py-1 px-2 rounded-lg border w-1/2">
-            <option value="Curso General">📚 Curso General</option>
-            <option value="Principiante">🌱 Principiante (A1)</option>
-            <option value="Intermedio">🌿 Intermedio (B1)</option>
-            <option value="Avanzado">🌳 Avanzado (C1)</option>
-          </select>
-        </div>
+    <div class="form-group">
+      <label>Profesor</label>
+      <select id="select-tutor">
+        <option value="Penny">Penny (Tutora)</option>
+        <option value="Pingu">Pingu (Tutor)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Idioma Objetivo</label>
+      <select id="select-language">
+        <option value="Inglés GB">Inglés GB</option>
+        <option value="Inglés US">Inglés US</option>
+        <option value="Francés">Francés</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Tema de la Lección</label>
+      <select id="select-topic">
+        <option value="Curso General">Curso General</option>
+        <option value="Viajes">Viajes y Turismo</option>
+        <option value="Negocios">Negocios</option>
+      </select>
+    </div>
+
+    <button class="btn-start" onclick="startLesson()">¡Comenzar Lección! 🚀</button>
+  </div>
+
+  <!-- VENTANA 2: CHAT -->
+  <div id="view-chat">
+    <div class="chat-header">
+      <button class="btn-back" onclick="showSetup()">⚙️ Volver</button>
+      <div class="chat-avatar" id="tutor-avatar">🐧</div>
+      <h3 id="tutor-name">Penny 🐧</h3>
+    </div>
+
+    <div class="chat-body" id="chat-messages">
+      <div class="message bot" id="welcome-msg">
+        ¡Hola! Soy tu tutora inteligente. ¡Háblame y aprendamos juntos!
       </div>
     </div>
 
-    <!-- Área de Chat -->
-    <div id="chatBox" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50">
-      <div class="flex gap-2 items-start">
-        <div class="bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm">
-          ¡Hola! Soy <span id="saludoNombre">Penny</span> 🐧, tu profesora inteligente. ¡Háblame y aprendamos juntos!
-        </div>
-      </div>
+    <div class="chat-footer">
+      <input type="text" id="user-input" placeholder="Escribe o habla..." onkeypress="handleKeyPress(event)">
+      <button onclick="sendMessage()">Enviar</button>
     </div>
-
-    <!-- Entrada de Texto -->
-    <div class="p-3 bg-white border-t flex items-center gap-2">
-      <button id="btnVoz" onclick="activarMicrofono()" class="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow transition flex-shrink-0">
-        🎙️
-      </button>
-      <input type="text" id="userInput" placeholder="Escribe o habla..." class="flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-sky-500" onkeypress="handleKeyPress(event)">
-      <button onclick="enviarMensaje()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-bold text-sm shadow transition flex-shrink-0">
-        Enviar
-      </button>
-    </div>
-
   </div>
 
   <script>
-    let tutorActual = 'female';
-    let velocidadVoz = 1.0;
-    let xp = 40;
-    let listaVoces = [];
-
-    function cargarVoces() {
-      if ('speechSynthesis' in window) {
-        listaVoces = window.speechSynthesis.getVoices();
-      }
-    }
-
-    if ('speechSynthesis' in window) {
-      cargarVoces();
-      window.speechSynthesis.onvoiceschanged = cargarVoces;
-    }
-
-    document.body.addEventListener('click', () => {
-      if ('speechSynthesis' in window && window.speechSynthesis.speaking === false) {
-        window.speechSynthesis.resume();
-      }
-    }, { once: true });
-
-    function seleccionarTutor(genero) {
-      tutorActual = genero;
-      const avatar = document.getElementById('avatarTutor');
-      const nombre = document.getElementById('nombreTutor');
-      const saludoNombre = document.getElementById('saludoNombre');
-      const btnPenny = document.getElementById('btnPenny');
-      const btnPingu = document.getElementById('btnPingu');
-
-      if (genero === 'female') {
-        avatar.src = '/pinguina.jpg';
-        nombre.textContent = 'Penny 🐧';
-        saludoNombre.textContent = 'Penny';
-        btnPenny.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow';
-        btnPingu.className = 'px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500';
-      } else {
-        avatar.src = '/pinguino.jpg';
-        nombre.textContent = 'Pingu 🐧';
-        saludoNombre.textContent = 'Pingu';
-        btnPingu.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow';
-        btnPenny.className = 'px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500';
-      }
-    }
-
-    function cambiarVelocidad() {
-      const btn = document.getElementById('btnVelocidad');
-      if (velocidadVoz === 1.0) {
-        velocidadVoz = 0.7;
-        btn.textContent = '🐢';
-        btn.title = 'Voz Lenta';
-      } else {
-        velocidadVoz = 1.0;
-        btn.textContent = '🐇';
-        btn.title = 'Voz Normal';
-      }
-    }
-
-    function limpiarTextoParaVoz(texto) {
-      if (!texto) return '';
-      return texto
-        .replace(/[\*\#\_]/g, '')
-        .replace(/[\(\)\[\]]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-
-    function buscarVozNativa(langPrefix, preferFemale = true) {
-      if (!listaVoces || listaVoces.length === 0) {
-        listaVoces = window.speechSynthesis.getVoices();
-      }
+    function startLesson() {
+      const tutor = document.getElementById('select-tutor').value;
+      const lang = document.getElementById('select-language').value;
       
-      const filtradas = listaVoces.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix.toLowerCase()));
-      if (filtradas.length === 0) return null;
+      document.getElementById('tutor-name').innerText = tutor + ' 🐧';
+      document.getElementById('welcome-msg').innerText = `¡Hola! Soy ${tutor}, tu tutor(a) de ${lang}. ¡Háblame y aprendamos juntos!`;
 
-      // Priorizar voces locales/Google/Google español sobre voces genéricas
-      const googleVoice = filtradas.find(v => v.name.includes('Google') || v.name.includes('Natural'));
-      if (googleVoice) return googleVoice;
-
-      return filtradas[0];
+      // Ocultar configuración y mostrar chat
+      document.getElementById('view-setup').style.display = 'none';
+      document.getElementById('view-chat').style.display = 'flex';
     }
 
-    function hablarTextoPlano(texto) {
-      if (!('speechSynthesis' in window) || !texto) return;
-
-      window.speechSynthesis.cancel(); // Detener cualquier reproducción previa
-      const textoLimpio = limpiarTextoParaVoz(texto);
-
-      // Separar el texto en frases o bloques
-      const bloques = textoLimpio.split(/(?<=[.!?])\s+/);
-
-      bloques.forEach((bloque) => {
-        if (!bloque.trim()) return;
-
-        const utterance = new SpeechSynthesisUtterance(bloque);
-        utterance.rate = velocidadVoz;
-
-        // Detectar si el bloque está principalmente en español
-        const contieneEspanol = /[áéíóúñ¿¡]/i.test(bloque) || 
-          /\b(hola|gracias|perfecto|bien|vamos|aprender|profesor|profesora|muy|correcto|que|como|esta|estudias|saludos)\b/i.test(bloque);
-
-        let langTarget = 'es-ES';
-        if (!contieneEspanol) {
-          const id = document.getElementById('selectIdioma').value;
-          if (id.includes('GB')) langTarget = 'en-GB';
-          else if (id.includes('US')) langTarget = 'en-US';
-          else if (id.includes('Francés')) langTarget = 'fr-FR';
-          else if (id.includes('Alemán')) langTarget = 'de-DE';
-          else if (id.includes('Italiano')) langTarget = 'it-IT';
-          else langTarget = 'en-US';
-        }
-
-        utterance.lang = langTarget;
-
-        const vozNativa = buscarVozNativa(langTarget.substring(0, 2), tutorActual === 'female');
-        if (vozNativa) {
-          utterance.voice = vozNativa;
-        }
-
-        window.speechSynthesis.speak(utterance);
-      });
+    function showSetup() {
+      // Ocultar chat y volver a la pantalla inicial
+      document.getElementById('view-chat').style.display = 'none';
+      document.getElementById('view-setup').style.display = 'block';
     }
 
-    function handleKeyPress(e) {
-      if (e.key === 'Enter') enviarMensaje();
-    }
-
-    async function enviarMensaje() {
-      const input = document.getElementById('userInput');
+    async function sendMessage() {
+      const input = document.getElementById('user-input');
       const text = input.value.trim();
       if (!text) return;
 
-      const chatBox = document.getElementById('chatBox');
-      
-      const userDiv = document.createElement('div');
-      userDiv.className = 'flex justify-end';
-      userDiv.innerHTML = `<div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] text-sm shadow-sm">${text}</div>`;
-      chatBox.appendChild(userDiv);
+      const chatBody = document.getElementById('chat-messages');
 
+      // Agregar mensaje del usuario
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.innerText = text;
+      chatBody.appendChild(userMsg);
       input.value = '';
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      const tutorDiv = document.createElement('div');
-      tutorDiv.className = 'flex gap-2 items-start';
-      const msgBubble = document.createElement('div');
-      msgBubble.className = 'bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm';
-      msgBubble.textContent = 'Pensando...';
-      tutorDiv.appendChild(msgBubble);
-      chatBox.appendChild(tutorDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      chatBody.scrollTop = chatBody.scrollHeight;
 
       try {
-        const response = await fetch('/api/chat-stream', {
+        // Petición al servidor de Node.js
+        const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: text,
-            targetLanguage: document.getElementById('selectIdioma').value,
-            gender: tutorActual
-          })
+          body: JSON.stringify({ message: text })
         });
+        const data = await response.json();
 
-        if (!response.ok) throw new Error('Error en la respuesta');
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullText = '';
-        msgBubble.textContent = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          fullText += chunk;
-          msgBubble.textContent = fullText;
-          chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Hablar con asignación forzada de voz nativa según idioma
-        hablarTextoPlano(fullText);
-
-        xp += 10;
-        document.getElementById('xpVal').textContent = xp;
-
+        // Agregar respuesta del bot
+        const botMsg = document.createElement('div');
+        botMsg.className = 'message bot';
+        botMsg.innerText = data.reply;
+        chatBody.appendChild(botMsg);
+        chatBody.scrollTop = chatBody.scrollHeight;
       } catch (err) {
-        msgBubble.textContent = 'Error interno del servidor al procesar la respuesta.';
+        console.error(err);
       }
     }
 
-    function activarMicrofono() {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Tu navegador no soporta el reconocimiento de voz.');
-        return;
-      }
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'es-ES';
-      recognition.onstart = () => {
-        document.getElementById('btnVoz').className = 'bg-green-500 text-white p-3 rounded-full shadow animate-pulse flex-shrink-0';
-      };
-      recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        document.getElementById('userInput').value = text;
-        enviarMensaje();
-      };
-      recognition.onend = () => {
-        document.getElementById('btnVoz').className = 'bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow transition flex-shrink-0';
-      };
-      recognition.start();
-    }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') sendMessage();
     }
   </script>
 </body>
