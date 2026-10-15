@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const apiKey = process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
-  console.warn("⚠️ ADVERTENCIA: No se encontró la variable GEMINI_API_KEY. Asegúrate de configurarla en Render o en tu archivo de entorno.");
+  console.warn("⚠️ ADVERTENCIA: No se encontró la variable GEMINI_API_KEY.");
 }
 
 const genAI = new GoogleGenerativeAI(apiKey || '');
@@ -41,7 +41,7 @@ Instrucciones clave:
 4. Anima siempre al alumno a seguir practicando con preguntas al final.`;
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       systemInstruction: systemInstruction
     });
 
