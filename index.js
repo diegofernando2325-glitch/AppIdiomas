@@ -41,7 +41,7 @@ Instrucciones clave:
 4. Anima siempre al alumno a seguir practicando con preguntas al final.`;
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.8-flash',
       systemInstruction: systemInstruction
     });
 
