@@ -97,20 +97,19 @@
     let tutorActual = 'female';
     let velocidadVoz = 1.0;
     let xp = 40;
-    let vocesDisponibles = [];
+    let listaVoces = [];
 
-    // Cargar voces del sistema
     function cargarVoces() {
       if ('speechSynthesis' in window) {
-        vocesDisponibles = window.speechSynthesis.getVoices();
+        listaVoces = window.speechSynthesis.getVoices();
       }
     }
+
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = cargarVoces;
       cargarVoces();
+      window.speechSynthesis.onvoiceschanged = cargarVoces;
     }
 
-    // Activar audio en móviles con el primer toque
     document.body.addEventListener('click', () => {
       if ('speechSynthesis' in window && window.speechSynthesis.speaking === false) {
         window.speechSynthesis.resume();
@@ -153,7 +152,6 @@
       }
     }
 
-    // Limpia caracteres de formato
     function limpiarTextoParaVoz(texto) {
       if (!texto) return '';
       return texto
@@ -163,53 +161,59 @@
         .trim();
     }
 
-    // Identifica el código de idioma nativo para cada fragmento
-    function obtenerCodigoIdiomaObjetivo() {
-      const id = document.getElementById('selectIdioma').value;
-      if (id.includes('GB')) return 'en-GB';
-      if (id.includes('US')) return 'en-US';
-      if (id.includes('Francés')) return 'fr-FR';
-      if (id.includes('Alemán')) return 'de-DE';
-      if (id.includes('Italiano')) return 'it-IT';
-      return 'en-US';
+    function buscarVozNativa(langPrefix, preferFemale = true) {
+      if (!listaVoces || listaVoces.length === 0) {
+        listaVoces = window.speechSynthesis.getVoices();
+      }
+      
+      const filtradas = listaVoces.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix.toLowerCase()));
+      if (filtradas.length === 0) return null;
+
+      // Priorizar voces locales/Google/Google español sobre voces genéricas
+      const googleVoice = filtradas.find(v => v.name.includes('Google') || v.name.includes('Natural'));
+      if (googleVoice) return googleVoice;
+
+      return filtradas[0];
     }
 
-    function reproducirFragmento(texto, langCode) {
+    function hablarTextoPlano(texto) {
       if (!('speechSynthesis' in window) || !texto) return;
 
-      const utterance = new SpeechSynthesisUtterance(texto);
-      utterance.lang = langCode;
-      utterance.rate = velocidadVoz;
+      window.speechSynthesis.cancel(); // Detener cualquier reproducción previa
+      const textoLimpio = limpiarTextoParaVoz(texto);
 
-      // Asignar voz nativa correspondiente
-      if (vocesDisponibles.length > 0) {
-        const vozNativa = vocesDisponibles.find(v => v.lang.startsWith(langCode.substring(0, 2)));
-        if (vozNativa) utterance.voice = vozNativa;
-      }
+      // Separar el texto en frases o bloques
+      const bloques = textoLimpio.split(/(?<=[.!?])\s+/);
 
-      window.speechSynthesis.speak(utterance);
-    }
+      bloques.forEach((bloque) => {
+        if (!bloque.trim()) return;
 
-    // Divide la respuesta en oraciones y lee cada una en su idioma nativo
-    function hablarFluido(textoCompleto) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(bloque);
+        utterance.rate = velocidadVoz;
 
-      const textoLimpio = limpiarTextoParaVoz(textoCompleto);
-      const targetLang = obtenerCodigoIdiomaObjetivo();
+        // Detectar si el bloque está principalmente en español
+        const contieneEspanol = /[áéíóúñ¿¡]/i.test(bloque) || 
+          /\b(hola|gracias|perfecto|bien|vamos|aprender|profesor|profesora|muy|correcto|que|como|esta|estudias|saludos)\b/i.test(bloque);
 
-      // Separa por oraciones completas
-      const oraciones = textoLimpio.match(/[^.!?]+[.!?]+/g) || [textoLimpio];
+        let langTarget = 'es-ES';
+        if (!contieneEspanol) {
+          const id = document.getElementById('selectIdioma').value;
+          if (id.includes('GB')) langTarget = 'en-GB';
+          else if (id.includes('US')) langTarget = 'en-US';
+          else if (id.includes('Francés')) langTarget = 'fr-FR';
+          else if (id.includes('Alemán')) langTarget = 'de-DE';
+          else if (id.includes('Italiano')) langTarget = 'it-IT';
+          else langTarget = 'en-US';
+        }
 
-      oraciones.forEach(oracion => {
-        const o = oracion.trim();
-        if (!o) return;
+        utterance.lang = langTarget;
 
-        // Si la frase contiene caracteres de español habituales o palabras clave en español, lee en español nativo
-        const esEspanol = /[áéíóúñ¿¡]/i.test(o) || /^(hola|bien|excelente|muy|correcto|tu|tu respuesta|recordemos|profesor|profesora)/i.test(o);
-        const langCode = esEspanol ? 'es-ES' : targetLang;
+        const vozNativa = buscarVozNativa(langTarget.substring(0, 2), tutorActual === 'female');
+        if (vozNativa) {
+          utterance.voice = vozNativa;
+        }
 
-        reproducirFragmento(o, langCode);
+        window.speechSynthesis.speak(utterance);
       });
     }
 
@@ -268,8 +272,8 @@
           chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Reproduce cada frase en su idioma nativo exacto
-        hablarFluido(fullText);
+        // Hablar con asignación forzada de voz nativa según idioma
+        hablarTextoPlano(fullText);
 
         xp += 10;
         document.getElementById('xpVal').textContent = xp;
