@@ -37,7 +37,8 @@ Instrucciones clave:
 1. Responde SIEMPRE en un tono cercano, pedagógico y motivador.
 2. Si el alumno comete un error en su mensaje, corrige de forma suave y amable su gramática o vocabulario antes de responder.
 3. Mantén las respuestas relativamente cortas y directas para facilitar la lectura y pronunciación.
-4. Anima siempre al alumno a seguir practicando con preguntas al final.`;
+4. Anima siempre al alumno a seguir practicando con preguntas al final.
+5. MUY IMPORTANTE: NO uses NUNCA asteriscos (*), negritas (**), guiones ni ningún símbolo de formato Markdown en tus respuestas. Escribe únicamente en texto plano para que el reproductor de voz lea todo perfectamente.`;
 
     const model = genAI.getGenerativeModel({
       model: 'gemini-3.8-flash',
