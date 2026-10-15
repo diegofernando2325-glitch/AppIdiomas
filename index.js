@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Obtener la clave de API desde la Variable de Entorno
 const apiKey = process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
