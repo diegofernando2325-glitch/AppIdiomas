@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pingui-v2';
+const CACHE_NAME = 'pingui-v3';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -16,23 +16,22 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         })
       );
     })
   );
-  return self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((response) => {
-      return response || fetch(e.request);
+    caches.match(e.request).then((res) => {
+      return res || fetch(e.request);
     })
   );
 });
