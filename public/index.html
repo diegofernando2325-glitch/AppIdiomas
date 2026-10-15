@@ -98,7 +98,7 @@
     let velocidadVoz = 1.0;
     let xp = 40;
 
-    // Activar reproductor de voz al tocar pantalla en móvil
+    // Activar reproductor de voz al tocar la pantalla en móviles
     document.body.addEventListener('click', () => {
       if ('speechSynthesis' in window && window.speechSynthesis.speaking === false) {
         window.speechSynthesis.resume();
@@ -141,11 +141,15 @@
       }
     }
 
-    // LIMPIAR ASTERRISCOS Y SÍMBOLOS ANTES DE HABLAR
+    // LIMPIAR ASTERISCOS Y SÍMBOLOS ANTES DE HABLAR
     function limpiarTextoParaVoz(texto) {
+      if (!texto) return '';
       return texto
-        .replace(/[\*\#\_]/g, '') // Elimina *, #, _
+        .replace(/\*/g, '')         // Elimina absolutamente todos los asteriscos
+        .replace(/#/g, '')          // Elimina almohadillas
+        .replace(/_/g, '')          // Elimina guiones bajos
         .replace(/[\(\)\[\]]/g, '') // Elimina paréntesis y corchetes
+        .replace(/\s+/g, ' ')       // Elimina espacios múltiples
         .trim();
     }
 
@@ -182,84 +186,4 @@
       
       const userDiv = document.createElement('div');
       userDiv.className = 'flex justify-end';
-      userDiv.innerHTML = `<div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] text-sm shadow-sm">${text}</div>`;
-      chatBox.appendChild(userDiv);
-
-      input.value = '';
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      const tutorDiv = document.createElement('div');
-      tutorDiv.className = 'flex gap-2 items-start';
-      const msgBubble = document.createElement('div');
-      msgBubble.className = 'bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm';
-      msgBubble.textContent = 'Pensando...';
-      tutorDiv.appendChild(msgBubble);
-      chatBox.appendChild(tutorDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      try {
-        const response = await fetch('/api/chat-stream', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: text,
-            targetLanguage: document.getElementById('selectIdioma').value,
-            gender: tutorActual
-          })
-        });
-
-        if (!response.ok) throw new Error('Error en la respuesta');
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullText = '';
-        msgBubble.textContent = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          fullText += chunk;
-          msgBubble.textContent = fullText;
-          chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Hablar sin leer asteriscos ni símbolos
-        hablar(fullText);
-
-        xp += 10;
-        document.getElementById('xpVal').textContent = xp;
-
-      } catch (err) {
-        msgBubble.textContent = 'Error interno del servidor al procesar la respuesta.';
-      }
-    }
-
-    function activarMicrofono() {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Tu navegador no soporta el reconocimiento de voz.');
-        return;
-      }
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'es-ES';
-      recognition.onstart = () => {
-        document.getElementById('btnVoz').className = 'bg-green-500 text-white p-3 rounded-full shadow animate-pulse flex-shrink-0';
-      };
-      recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        document.getElementById('userInput').value = text;
-        enviarMensaje();
-      };
-      recognition.onend = () => {
-        document.getElementById('btnVoz').className = 'bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow transition flex-shrink-0';
-      };
-      recognition.start();
-    }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
-    }
-  </script>
-</body>
-</html>
+      userDiv.innerHTML = `<div class="bg-blue-600 text-white p-3 rounded-2xl rounded-
