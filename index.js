@@ -1,75 +1,77 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { GoogleGenAI, Type } from '@google/genai';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const apiKey = process.env.GEMINI_API_KEY;
-
-if (!apiKey) {
-  console.warn("⚠️ ADVERTENCIA: No se encontró la variable GEMINI_API_KEY.");
-}
-
-const genAI = new GoogleGenerativeAI(apiKey || '');
-
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
+
+const apiKey = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6IIZqwxpwGm7kQDnO8BBki87IDfV8PFEQTX-JsmCW50DA';
+const ai = new GoogleGenAI({ apiKey });
 
 app.post('/api/chat-stream', async (req, res) => {
   try {
-    const { message, targetLanguage, gender } = req.body;
+    const { message, tutor, language, appLanguage, currentDay } = req.body;
 
-    if (!message) {
-      return res.status(400).json({ error: 'El mensaje es obligatorio' });
-    }
+    const isPenny = (tutor === 'Penny');
+    const personality = isPenny
+      ? "Eres Penny, una tutora pingüina hiperactiva, dulce, divertida y motivadora. Te apasiona el reto de 30 días."
+      : "Eres Pingu, un tutor pingüino gamer, gracioso y competitivo. Tratas cada día como una misión de videojuego.";
 
-    const tutorName = gender === 'female' ? 'Penny' : 'Pingu';
-    const tutorRole = gender === 'female' ? 'profesora' : 'profesor';
+    let dayLevel = "Principiante básico";
+    if (currentDay > 10 && currentDay <= 20) dayLevel = "Intermedio fluido";
+    if (currentDay > 20) dayLevel = "Avanzado y nativo";
 
-    const systemInstruction = `Eres ${tutorName}, una simpática y paciente ${tutorRole} pingüina de idiomas para estudiantes.
-Tu objetivo es enseñar el idioma "${targetLanguage || 'inglés'}".
-Instrucciones clave:
-1. Responde SIEMPRE en un tono cercano, pedagógico y motivador.
-2. Si el alumno comete un error en su mensaje, corrige de forma suave y amable su gramática o vocabulario antes de responder.
-3. Mantén las respuestas relativamente cortas y directas para facilitar la lectura y pronunciación.
-4. Anima siempre al alumno a seguir practicando con preguntas al final.
-5. MUY IMPORTANTE: NO uses NUNCA asteriscos (*), negritas (**), guiones ni ningún símbolo de formato Markdown en tus respuestas. Escribe únicamente en texto plano para que el reproductor de voz lea todo perfectamente.`;
+    const systemInstruction = `${personality} 
+    El estudiante habla el idioma nativo: "${appLanguage || 'Español'}".
+    Su objetivo es aprender: "${language || 'Inglés'}".
+    DÍA ACTUAL DEL RETO: Día ${currentDay || 1} de 30 (Nivel: ${dayLevel}).
 
-    const model = genAI.getGenerativeModel({
+    Reglas del Reto Diario:
+    1. Responde de forma muy breve (2 frases máximo) e interactiva.
+    2. Da un elogio estilo juego e introduce 2 palabras clave en ${language}.
+    3. Haz una pregunta práctica en ${language} para que complete su misión del día.
+    4. Jamás menciones ropa, accesorios, lazo, auriculares ni emoticonos descriptivos.`;
+
+    const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
-      systemInstruction: systemInstruction
+      contents: message || '¡Hola!',
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            reply: { type: Type.STRING },
+            correction: { type: Type.STRING, nullable: true },
+            emotion: { type: Type.STRING },
+            xpEarned: { type: Type.INTEGER }
+          },
+          required: ['reply', 'emotion', 'xpEarned']
+        }
+      }
     });
 
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Transfer-Encoding', 'chunked');
+    const data = JSON.parse(response.text);
 
-    const resultStream = await model.generateContentStream(message);
+    res.json({
+      reply: data.reply || '¡Excelente avance en tu reto diario!',
+      correction: data.correction || null,
+      emotion: data.emotion || 'happy',
+      xpEarned: data.xpEarned || 20
+    });
 
-    for await (const chunk of resultStream.stream) {
-      const chunkText = chunk.text();
-      res.write(chunkText);
-    }
-
-    res.end();
   } catch (error) {
-    console.error('Error en streaming con Gemini:', error);
-    if (!res.headersSent) {
-      res.status(500).json({ error: 'Error interno del servidor al procesar la respuesta.' });
-    } else {
-      res.end();
-    }
+    console.error('--- ERROR EN EL SERVIDOR ---', error);
+    res.status(500).json({
+      reply: '¡Ups! Error de conexión. ¿Me repites?',
+      emotion: 'thinking',
+      xpEarned: 0
+    });
   }
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 app.listen(PORT, () => {
-  console.log(`Servidor activo corriendo en el puerto ${PORT}`);
+  console.log(`🚀 Servidor Pingüi PRO activo en http://localhost:${PORT}`);
 });

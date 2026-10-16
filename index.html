@@ -2,260 +2,1041 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pingüi - Tutor IA de Idiomas</title>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#3b82f6">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pingüi World - Master Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    * {
+      box-sizing: border-box;
+      font-family: 'Fredoka', sans-serif;
+      margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden; background: #46a302;
+    }
+
+    body {
+      display: flex; justify-content: center; align-items: center;
+    }
+
+    #app-container {
+      background: #ffffff;
+      width: 100%; height: 100%;
+      max-width: 480px;
+      display: flex; flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 25px rgba(0,0,0,0.3);
+    }
+
+    /* BARRA TRADUCTORA SUPERIOR */
+    .app-lang-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #235390; color: white; padding: 8px 14px; flex-shrink: 0;
+    }
+
+    .app-lang-bar select {
+      padding: 4px 8px; border-radius: 10px; border: 2px solid #ffc800;
+      font-size: 12px; font-weight: 700; color: #235390; background: #fff;
+      outline: none;
+    }
+
+    /* BARRA DE GAMIFICACIÓN */
+    .game-stats-bar {
+      display: flex; justify-content: space-around; align-items: center;
+      background: #f7f7f7; padding: 8px 10px; border-bottom: 3px solid #e5e5e5; flex-shrink: 0;
+    }
+
+    .stat-badge {
+      font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 4px;
+    }
+
+    /* PANTALLA 1: MENÚ Y RETO DE 30 DÍAS */
+    #page-setup {
+      padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto;
+    }
+
+    .day-card-container {
+      background: #f1f2f6; border-radius: 20px; padding: 14px; border: 2px solid #e5e5e5; text-align: center;
+    }
+
+    .day-progress-title {
+      font-size: 16px; font-weight: 700; color: #2f3542; margin-bottom: 6px;
+    }
+
+    .action-buttons-row {
+      display: flex; gap: 8px; margin-top: 8px;
+    }
+
+    .btn-secondary-action {
+      flex: 1; background: #1cb0f6; border: none; border-bottom: 3px solid #1899d6;
+      color: white; padding: 8px; border-radius: 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+
+    .btn-premium-unlock {
+      background: #ff9600; border: none; border-bottom: 4px solid #e08400;
+      color: white; padding: 10px; border-radius: 16px; font-size: 13px; font-weight: 700;
+      cursor: pointer; width: 100%; margin-top: 8px;
+    }
+
+    .tutor-grid { display: flex; gap: 12px; }
+
+    .tutor-card {
+      flex: 1; border: 3px solid #e5e5e5; border-bottom: 6px solid #e5e5e5;
+      border-radius: 20px; padding: 10px; text-align: center; cursor: pointer; background: #ffffff;
+    }
+
+    .tutor-card.selected {
+      border-color: #1cb0f6; border-bottom-color: #1899d6; background: #ddf4ff;
+    }
+
+    .tutor-img-preview {
+      width: 65px; height: 65px; object-fit: cover; border-radius: 50%; margin: 0 auto 6px; display: block; border: 3px solid #1cb0f6;
+    }
+
+    .select-box { display: flex; flex-direction: column; gap: 4px; }
+    .select-box label { font-size: 11px; font-weight: 700; color: #afafaf; text-transform: uppercase; }
+
+    select {
+      padding: 10px; border-radius: 14px; border: 2px solid #e5e5e5; border-bottom: 4px solid #e5e5e5;
+      font-size: 14px; font-weight: 700; color: #4b4b4b; background: white; outline: none;
+    }
+
+    .btn-duo-start {
+      background: #58cc02; border: none; border-bottom: 6px solid #46a302;
+      color: white; padding: 14px; border-radius: 20px; font-size: 18px; font-weight: 700;
+      cursor: pointer; text-transform: uppercase; margin-top: auto; box-shadow: 0 4px 0 #3d8f02;
+    }
+
+    /* MODAL DE MONETIZACIÓN */
+    #paywall-modal {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); display: none; flex-direction: column;
+      justify-content: center; align-items: center; padding: 20px; z-index: 200; color: white; text-align: center;
+    }
+
+    .paywall-card {
+      background: #ffffff; color: #2f3542; padding: 25px; border-radius: 25px;
+      max-width: 360px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .paywall-card h2 { color: #ff9600; font-size: 26px; margin-bottom: 10px; }
+    .paywall-card p { font-size: 14px; font-weight: 600; color: #555; margin-bottom: 15px; }
+
+    .btn-buy-premium {
+      background: #58cc02; border: none; border-bottom: 5px solid #46a302;
+      color: white; padding: 14px; border-radius: 18px; font-size: 16px; font-weight: 700;
+      cursor: pointer; width: 100%; margin-bottom: 10px;
+    }
+
+    .btn-close-paywall {
+      background: none; border: none; color: #888; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+
+    /* MODAL FLASHCARDS */
+    #flashcard-modal {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); display: none; flex-direction: column;
+      justify-content: center; align-items: center; padding: 20px; z-index: 180;
+    }
+
+    .card-flip {
+      background: #ffffff; width: 280px; height: 180px; border-radius: 20px;
+      border: 4px solid #1cb0f6; border-bottom: 8px solid #1899d6;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 20px; text-align: center; cursor: pointer; transition: transform 0.3s;
+    }
+
+    /* MODAL DIPLOMA */
+    #certificate-modal {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9); display: none; flex-direction: column;
+      justify-content: center; align-items: center; padding: 15px; z-index: 250;
+    }
+
+    .cert-box {
+      background: #fffdf0; border: 8px double #ffc800; padding: 20px;
+      border-radius: 15px; text-align: center; color: #333; max-width: 380px; width: 100%;
+    }
+
+    .cert-box h1 { color: #235390; font-size: 24px; margin-bottom: 10px; }
+
+    /* CHAT DE LECCIÓN */
+    #page-chat {
+      display: none; flex-direction: column; flex: 1; height: 100%; min-height: 0; overflow: hidden;
+    }
+
+    .lesson-top-bar {
+      padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 2px solid #f0f0f0; flex-shrink: 0;
+    }
+
+    .btn-close {
+      background: #ff4b4b; border: none; border-bottom: 3px solid #ea2b2b;
+      color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; font-weight: 700;
+    }
+
+    .tutor-stage {
+      background: #f7f7f7; padding: 10px 15px; display: flex; align-items: center; gap: 12px;
+      border-bottom: 2px solid #e5e5e5; flex-shrink: 0;
+    }
+
+    .avatar-container {
+      position: relative; width: 60px; height: 60px; border-radius: 50%; overflow: hidden;
+      border: 3px solid #1cb0f6; background: #fff;
+    }
+
+    .avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+    .chat-box {
+      flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #ffffff;
+    }
+
+    .msg {
+      max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.4;
+      white-space: pre-wrap; font-weight: 600;
+    }
+
+    .msg.bot { background: #f1f2f6; color: #2f3542; align-self: flex-start; border-bottom-left-radius: 4px; border: 2px solid #e5e5e5; }
+    .msg.user { background: #1cb0f6; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+
+    .speech-score-toast {
+      align-self: flex-end; background: #e8f5e9; color: #2e7d32;
+      border: 2px solid #a5d6a7; border-radius: 12px; padding: 4px 10px;
+      font-size: 11px; font-weight: 700; margin-top: -6px;
+    }
+
+    .input-dock {
+      padding: 10px 12px; background: white; border-top: 2px solid #e5e5e5; display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+    }
+
+    .input-dock input {
+      flex: 1; padding: 10px 14px; border: 2px solid #e5e5e5; border-radius: 20px; outline: none; font-size: 14px; font-weight: 600;
+    }
+
+    .btn-mic {
+      background: #ff9600; border: none; border-bottom: 4px solid #e08400; color: white;
+      width: 42px; height: 42px; border-radius: 50%; font-size: 18px; cursor: pointer; flex-shrink: 0;
+    }
+
+    .btn-mic.recording {
+      background: #ff4b4b; border-bottom-color: #ea2b2b; animation: pulseMic 0.8s infinite alternate;
+    }
+
+    @keyframes pulseMic { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
+
+    .btn-send {
+      background: #58cc02; border: none; border-bottom: 4px solid #46a302; color: white;
+      padding: 0 14px; height: 42px; border-radius: 20px; font-weight: 700; font-size: 14px; cursor: pointer; flex-shrink: 0;
+    }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-2 sm:p-4">
+<body>
 
-  <div class="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col h-[90vh]">
-    
-    <!-- Encabezado / Header -->
-    <div class="bg-sky-500 text-white p-4 flex flex-col gap-2 shadow-md relative">
-      <div class="flex justify-between items-center text-xs font-bold">
-        <span class="bg-amber-400 text-slate-800 px-2 py-1 rounded-full flex items-center gap-1">
-          🔥 Racha: <span id="rachaVal">1</span> d
-        </span>
-        <button id="btnVocabulario" class="bg-sky-700 hover:bg-sky-800 text-white px-3 py-1 rounded-full text-xs transition">
-          📖 Vocabulario
-        </button>
-        <span class="bg-sky-700 text-white px-2 py-1 rounded-full flex items-center gap-1">
-          ⭐ XP: <span id="xpVal">40</span>
-        </span>
+  <div id="app-container">
+
+    <!-- BARRA SUPERIOR TRADUCTORA -->
+    <div class="app-lang-bar">
+      <label id="lbl-app-language">🌐 App Language:</label>
+      <select id="select-app-lang" onchange="changeAppLanguage()">
+        <option value="Español">Español 🇪🇸</option>
+        <option value="English">English 🇺🇸</option>
+        <option value="Français">Français 🇫🇷</option>
+        <option value="Deutsch">Deutsch 🇩🇪</option>
+        <option value="Italiano">Italiano 🇮🇹</option>
+        <option value="Portugués">Português 🇧🇷</option>
+        <option value="Pусский">Русский 🇷🇺</option>
+        <option value="Filipino">Filipino 🇵🇭</option>
+        <option value="中文">中文 🇨🇳</option>
+      </select>
+    </div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="game-stats-bar">
+      <div class="stat-badge" style="color: #ff9600;"><span id="lbl-day-badge">🔥 Día</span> <span id="user-day">1</span>/30</div>
+      <div class="stat-badge" style="color: #ff4b4b;">💖 5</div>
+      <div class="stat-badge" style="color: #1cb0f6;">💎 <span id="gems-val">50</span></div>
+    </div>
+
+    <!-- MODAL MONETIZACIÓN -->
+    <div id="paywall-modal">
+      <div class="paywall-card">
+        <h2>👑 Pingüi PRO</h2>
+        <p id="paywall-desc">¡Has completado tu lección diaria! Desbloquea acceso ilimitado para avanzar todos los días sin esperar 24 horas.</p>
+        <button class="btn-buy-premium" id="btn-buy-pro" onclick="buyPremium()">Desbloquear por $4.99 / mes</button>
+        <button class="btn-close-paywall" id="btn-close-pro" onclick="closePaywall()">Continuar gratis mañana</button>
       </div>
+    </div>
 
-      <!-- Selección de Tutor y Velocidad -->
-      <div class="flex justify-between items-center mt-1">
-        <div class="flex bg-sky-600 p-1 rounded-xl gap-1">
-          <button id="btnPenny" onclick="seleccionarTutor('female')" class="px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow">
-            👩‍🏫 Tutora (Penny)
-          </button>
-          <button id="btnPingu" onclick="seleccionarTutor('male')" class="px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500">
-            🧑‍🏫 Tutor (Pingu)
-          </button>
-        </div>
-
-        <!-- Velocidad de Voz -->
-        <button id="btnVelocidad" onclick="cambiarVelocidad()" class="bg-sky-600 hover:bg-sky-700 p-2 rounded-full text-sm" title="Cambiar velocidad de voz">
-          🐇
-        </button>
+    <!-- MODAL FLASHCARDS -->
+    <div id="flashcard-modal">
+      <div class="card-flip" onclick="flipFlashcard()">
+        <span style="font-size: 12px; color: #aaa; font-weight: 700;" id="lbl-flip-hint">Toca para voltear 🔄</span>
+        <h2 id="card-front" style="color: #2f3542; margin-top: 10px;">Hello</h2>
+        <h3 id="card-back" style="color: #58cc02; display: none; margin-top: 10px;">Hola</h3>
       </div>
+      <button style="margin-top: 20px; background: #ff4b4b; border: none; color: white; padding: 10px 20px; border-radius: 14px; font-weight: 700; cursor: pointer;" id="btn-close-cards" onclick="closeFlashcards()">Cerrar repaso</button>
+    </div>
 
-      <!-- Perfil del Tutor -->
-      <div class="flex flex-col items-center mt-2">
-        <div class="w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
-          <img id="avatarTutor" src="/pinguina.jpg" alt="Tutor" class="w-full h-full object-cover">
-        </div>
-        <h1 id="nombreTutor" class="text-xl font-bold mt-1">Penny 🐧</h1>
+    <!-- MODAL DIPLOMA -->
+    <div id="certificate-modal">
+      <div class="cert-box">
+        <h1 id="cert-title">📜 CERTIFICADO DE GRADUACIÓN</h1>
+        <p style="font-size: 14px; margin-top: 10px;" id="cert-sub">Otorgado por <b>Pingüi World</b> a:</p>
+        <h2 style="color: #ff9600; margin: 15px 0;" id="cert-user">¡ESTUDIANTE ESTRELLA!</h2>
+        <p style="font-size: 13px;" id="cert-desc">Por completar exitosamente el <b>Reto de 30 Días de Idiomas</b> con excelencia conversacional.</p>
+        <div style="margin-top: 20px; font-size: 12px; color: #777;">Firma Digital: Penny 🐧 & Pingu 🐧</div>
+        <button class="btn-buy-premium" style="margin-top: 15px;" id="btn-share-cert" onclick="closeCertificate()">¡Compartir Diploma! 🎉</button>
+      </div>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL -->
+    <div id="page-setup">
+      <div class="day-card-container">
+        <div class="day-progress-title"><span id="lbl-challenge-title">🗓️ Reto de 30 Días: Día</span> <span id="current-day-label">1</span></div>
+        <p style="font-size: 12px; color: #777; font-weight: 600;" id="lbl-diff-sub">Dificultad adaptativa diaria</p>
         
-        <!-- Selectores de Idioma y Nivel -->
-        <div class="flex gap-2 mt-2 w-full px-4">
-          <select id="selectIdioma" class="bg-white text-slate-700 text-xs font-bold py-1 px-2 rounded-lg border w-1/2">
-            <option value="Inglés GB">Inglés GB</option>
-            <option value="Inglés US">Inglés US</option>
-            <option value="Francés">Francés</option>
-            <option value="Alemán">Alemán</option>
-            <option value="Italiano">Italiano</option>
-          </select>
-          <select id="selectNivel" class="bg-white text-slate-700 text-xs font-bold py-1 px-2 rounded-lg border w-1/2">
-            <option value="Curso General">📚 Curso General</option>
-            <option value="Principiante">🌱 Principiante (A1)</option>
-            <option value="Intermedio">🌿 Intermedio (B1)</option>
-            <option value="Avanzado">🌳 Avanzado (C1)</option>
-          </select>
+        <div class="action-buttons-row">
+          <button class="btn-secondary-action" id="btn-review-words" onclick="openFlashcards()">🃏 Repasar Palabras</button>
+          <button class="btn-secondary-action" id="btn-reminder" onclick="requestNotificationPermission()">🔔 Recordatorio</button>
+        </div>
+
+        <button class="btn-premium-unlock" id="btn-unlock-pro" onclick="openPaywall()">👑 Desbloquear todos los Días (PRO)</button>
+      </div>
+
+      <div class="select-box">
+        <label id="lbl-tutor">1. Elige tu tutor de hoy</label>
+        <div class="tutor-grid">
+          <div class="tutor-card selected" id="card-penny" onclick="selectTutor('Penny')">
+            <img src="pinguina.jpg" class="tutor-img-preview" alt="Penny">
+            <h3>Penny</h3>
+          </div>
+          <div class="tutor-card" id="card-pingu" onclick="selectTutor('Pingu')">
+            <img src="pinguino.jpg" class="tutor-img-preview" alt="Pingu">
+            <h3>Pingu</h3>
+          </div>
         </div>
       </div>
+
+      <div class="select-box">
+        <label id="lbl-target-lang">2. ¿Qué idioma vas a practicar?</label>
+        <select id="select-lang"></select>
+      </div>
+
+      <button class="btn-duo-start" id="btn-start" onclick="startLesson()">¡Iniciar Lección del Día!</button>
     </div>
 
-    <!-- Área de Chat -->
-    <div id="chatBox" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50">
-      <div class="flex gap-2 items-start">
-        <div class="bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm">
-          ¡Hola! Soy <span id="saludoNombre">Penny</span> 🐧, tu profesora inteligente. ¡HÁblame y aprendamos juntos!
+    <!-- CHAT DE LECCIÓN -->
+    <div id="page-chat">
+      <div class="lesson-top-bar">
+        <button class="btn-close" onclick="showSetup()">✕</button>
+        <span style="font-size: 13px; font-weight: 700; color: #1cb0f6;" id="active-day-tag">Día 1 de 30</span>
+      </div>
+
+      <div class="tutor-stage">
+        <div class="avatar-container">
+          <img src="pinguina.jpg" id="active-tutor-img" class="avatar-img" alt="Tutor">
+        </div>
+        <div>
+          <h3 id="active-tutor-name" style="color: #4b4b4b;">Penny</h3>
+          <span style="font-size: 12px; color: #58cc02; font-weight: 700;" id="lbl-online-status">● Misión activa</span>
         </div>
       </div>
-    </div>
 
-    <!-- Entrada de Texto -->
-    <div class="p-3 bg-white border-t flex items-center gap-2">
-      <button id="btnVoz" onclick="activarMicrofono()" class="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow transition flex-shrink-0">
-        🎙️
-      </button>
-      <input type="text" id="userInput" placeholder="Escribe o habla..." class="flex-1 border border-slate-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-sky-500" onkeypress="handleKeyPress(event)">
-      <button onclick="enviarMensaje()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-bold text-sm shadow transition flex-shrink-0">
-        Enviar
-      </button>
+      <div class="chat-box" id="chat-messages"></div>
+
+      <div class="input-dock">
+        <button class="btn-mic" id="btn-mic" onclick="toggleMicrophone()">🎙️</button>
+        <input type="text" id="user-input" placeholder="Responde o habla..." onkeypress="if(event.key==='Enter') send();">
+        <button class="btn-send" id="btn-send-text" onclick="send()">Enviar</button>
+      </div>
     </div>
 
   </div>
 
   <script>
-    let tutorActual = 'female';
-    let velocidadVoz = 1.0;
-    let xp = 40;
-    let racha = 1;
+    let selectedTutor = 'Penny';
+    let currentDay = parseInt(localStorage.getItem('pingu_day')) || 1;
+    let messagesInLesson = 0;
+    let isPremium = localStorage.getItem('pingu_premium') === 'true';
+    let isVoiceInput = false;
+    let recognition = null;
+    let isRecording = false;
 
-    // Activar audio al tocar pantalla en móviles
-    document.body.addEventListener('click', () => {
-      if ('speechSynthesis' in window && window.speechSynthesis.speaking === false) {
-        window.speechSynthesis.resume();
+    document.getElementById('user-day').innerText = currentDay;
+    document.getElementById('current-day-label').innerText = currentDay;
+
+    // MAPEO DE CÓDIGOS ISO PARA HABLA Y RECONOCIMIENTO DE VOZ
+    const langIsoMap = {
+      'Español': 'es-ES',
+      'Spanish': 'es-ES',
+      'Espagnol': 'es-ES',
+      'Spanisch': 'es-ES',
+      'Spagnolo': 'es-ES',
+      'Espanhol': 'es-ES',
+      'Испанский': 'es-ES',
+      'Espanyol': 'es-ES',
+      '西班牙语': 'es-ES',
+
+      'Inglés US': 'en-US',
+      'English US': 'en-US',
+      'English': 'en-US',
+      'Anglais': 'en-US',
+      'Englisch': 'en-US',
+      'Inglese': 'en-US',
+      'Inglês': 'en-US',
+      'Английский': 'en-US',
+      'Ingles': 'en-US',
+      '英语': 'en-US',
+
+      'Francés': 'fr-FR',
+      'French': 'fr-FR',
+      'Français': 'fr-FR',
+      'Französisch': 'fr-FR',
+      'Francese': 'fr-FR',
+      'Francês': 'fr-FR',
+      'Французский': 'fr-FR',
+      'Pranses': 'fr-FR',
+      '法语': 'fr-FR',
+
+      'Alemán': 'de-DE',
+      'German': 'de-DE',
+      'Deutsch': 'de-DE',
+      'Allemand': 'de-DE',
+      'Tedesco': 'de-DE',
+      'Alemão': 'de-DE',
+      'Немецкий': 'de-DE',
+      'Aleman': 'de-DE',
+      '德语': 'de-DE',
+
+      'Italiano': 'it-IT',
+      'Italian': 'it-IT',
+      'Italien': 'it-IT',
+      'Italienisch': 'it-IT',
+      'Итальянский': 'it-IT',
+      'Итальяно': 'it-IT',
+      '意大利语': 'it-IT',
+
+      'Portugués': 'pt-BR',
+      'Portuguese': 'pt-BR',
+      'Português': 'pt-BR',
+      'Portugais': 'pt-BR',
+      'Portugiesisch': 'pt-BR',
+      'Portoghese': 'pt-BR',
+      'Португальский': 'pt-BR',
+      'Portuges': 'pt-BR',
+      '葡萄牙语': 'pt-BR',
+
+      'Ruso': 'ru-RU',
+      'Russian': 'ru-RU',
+      'Russe': 'ru-RU',
+      'Russisch': 'ru-RU',
+      'Russo': 'ru-RU',
+      'Pусский': 'ru-RU',
+      'Русский': 'ru-RU',
+      'Ruso (Ruso)': 'ru-RU',
+      '俄语': 'ru-RU',
+
+      'Filipino': 'tl-PH',
+      'Tagalog': 'tl-PH',
+      'Tagalo': 'tl-PH',
+      'Filipino / Tagalog': 'tl-PH',
+      'Филиппинский': 'tl-PH',
+      '菲律宾语': 'tl-PH',
+
+      'Japonés': 'ja-JP',
+      'Japanese': 'ja-JP',
+      'Japonais': 'ja-JP',
+      'Japanisch': 'ja-JP',
+      'Giapponese': 'ja-JP',
+      'Japonês': 'ja-JP',
+      'Японский': 'ja-JP',
+      'Hapon': 'ja-JP',
+      '日语': 'ja-JP'
+    };
+
+    const i18n = {
+      'Español': {
+        dayBadge: '🔥 Día',
+        challengeTitle: '🗓️ Reto de 30 Días: Día',
+        diffSub: 'Dificultad adaptativa diaria',
+        reviewWords: '🃏 Repasar Palabras',
+        reminder: '🔔 Recordatorio',
+        unlockPro: '👑 Desbloquear todos los Días (PRO)',
+        tutor: '1. Elige tu tutor de hoy',
+        targetLang: '2. ¿Qué idioma vas a practicar?',
+        btnStart: '¡Iniciar Lección del Día!',
+        btnSend: 'Enviar',
+        placeholder: 'Responde o habla...',
+        onlineStatus: '● Misión activa',
+        paywallDesc: '¡Has completado tu lección diaria! Desbloquea acceso ilimitado para avanzar todos los días sin esperar 24 horas.',
+        buyPro: 'Desbloquear por $4.99 / mes',
+        closePro: 'Continuar gratis mañana',
+        flipHint: 'Toca para voltear 🔄',
+        closeCards: 'Cerrar repaso',
+        welcomePenny: '¡Bienvenido al Día {day} del reto! Soy Penny. Vamos a dominar {lang} juntos. ¿Listo?',
+        welcomePingu: '¡Hey! Día {day} del reto de {lang}. Soy Pingu. ¡A cumplir la misión de hoy!',
+        languages: [
+          { val: 'Español', txt: 'Español 🇪🇸' },
+          { val: 'Inglés US', txt: 'Inglés 🇺🇸 / 🇬🇧' },
+          { val: 'Francés', txt: 'Francés 🇫🇷' },
+          { val: 'Alemán', txt: 'Alemán 🇩🇪' },
+          { val: 'Italiano', txt: 'Italiano 🇮🇹' },
+          { val: 'Portugués', txt: 'Português 🇧🇷' },
+          { val: 'Ruso', txt: 'Ruso 🇷🇺' },
+          { val: 'Filipino', txt: 'Filipino 🇵🇭' },
+          { val: 'Japonés', txt: 'Japonés 🇯🇵' }
+        ]
+      },
+      'English': {
+        dayBadge: '🔥 Day',
+        challengeTitle: '🗓️ 30-Day Challenge: Day',
+        diffSub: 'Adaptive daily difficulty',
+        reviewWords: '🃏 Review Words',
+        reminder: '🔔 Reminder',
+        unlockPro: '👑 Unlock All Days (PRO)',
+        tutor: '1. Choose today\'s tutor',
+        targetLang: '2. Which language will you practice?',
+        btnStart: 'Start Today\'s Lesson!',
+        btnSend: 'Send',
+        placeholder: 'Answer or speak...',
+        onlineStatus: '● Active Mission',
+        paywallDesc: 'You have completed today\'s lesson! Unlock unlimited access to practice every day without waiting 24 hours.',
+        buyPro: 'Unlock for $4.99 / month',
+        closePro: 'Continue free tomorrow',
+        flipHint: 'Tap to flip 🔄',
+        closeCards: 'Close review',
+        welcomePenny: 'Welcome to Day {day}! I am Penny. We will master {lang} together. Ready?',
+        welcomePingu: 'Hey! Day {day} of the {lang} challenge. I am Pingu. Let\'s clear today\'s mission!',
+        languages: [
+          { val: 'Spanish', txt: 'Spanish 🇪🇸' },
+          { val: 'English US', txt: 'English 🇺🇸 / 🇬🇧' },
+          { val: 'French', txt: 'French 🇫🇷' },
+          { val: 'German', txt: 'German 🇩🇪' },
+          { val: 'Italian', txt: 'Italian 🇮🇹' },
+          { val: 'Portuguese', txt: 'Portuguese 🇧🇷' },
+          { val: 'Russian', txt: 'Russian 🇷🇺' },
+          { val: 'Filipino', txt: 'Filipino 🇵🇭' },
+          { val: 'Japanese', txt: 'Japanese 🇯🇵' }
+        ]
+      },
+      'Français': {
+        dayBadge: '🔥 Jour',
+        challengeTitle: '🗓️ Défi 30 Jours: Jour',
+        diffSub: 'Difficulté quotidienne adaptative',
+        reviewWords: '🃏 Réviser les mots',
+        reminder: '🔔 Rappel',
+        unlockPro: '👑 Débloquer tous les jours (PRO)',
+        tutor: '1. Choisissez votre tuteur',
+        targetLang: '2. Quelle langue pratiquer?',
+        btnStart: 'Commencer la leçon!',
+        btnSend: 'Envoyer',
+        placeholder: 'Répondez ou parlez...',
+        onlineStatus: '● Mission active',
+        paywallDesc: 'Vous avez terminé votre leçon quotidienne! Débloquez un accès illimité.',
+        buyPro: 'Débloquer pour 4.99$/mois',
+        closePro: 'Continuer gratuitement demain',
+        flipHint: 'Appuyez pour retourner 🔄',
+        closeCards: 'Fermer la révision',
+        welcomePenny: 'Bienvenue au jour {day}! Je suis Penny. Nous allons maîtriser le {lang} ensemble. Prêt?',
+        welcomePingu: 'Salut! Jour {day} du défi {lang}. Je suis Pingu. Remplissons la mission aujourd\'hui!',
+        languages: [
+          { val: 'Espagnol', txt: 'Espagnol 🇪🇸' },
+          { val: 'Anglais', txt: 'Anglais 🇺🇸 / 🇬🇧' },
+          { val: 'Français', txt: 'Français 🇫🇷' },
+          { val: 'Allemand', txt: 'Allemand 🇩🇪' },
+          { val: 'Italien', txt: 'Italien 🇮🇹' },
+          { val: 'Portugais', txt: 'Portugais 🇧🇷' },
+          { val: 'Russe', txt: 'Russe 🇷🇺' },
+          { val: 'Filipino', txt: 'Filipino 🇵🇭' },
+          { val: 'Japonais', txt: 'Japonais 🇯🇵' }
+        ]
+      },
+      'Deutsch': {
+        dayBadge: '🔥 Tag',
+        challengeTitle: '🗓️ 30-Tage-Challenge: Tag',
+        diffSub: 'Tägliche adaptive Schwierigkeit',
+        reviewWords: '🃏 Wörter wiederholen',
+        reminder: '🔔 Erinnerung',
+        unlockPro: '👑 Alle Tage freischalten (PRO)',
+        tutor: '1. Wähle deinen Tutor',
+        targetLang: '2. Welche Sprache üben?',
+        btnStart: 'Lektion starten!',
+        btnSend: 'Senden',
+        placeholder: 'Antworten oder sprechen...',
+        onlineStatus: '● Aktive Mission',
+        paywallDesc: 'Lektion für heute abgeschlossen! Schalte unbegrenzten Zugang frei.',
+        buyPro: 'Freischalten für 4,99$/Monat',
+        closePro: 'Morgen kostenlos weitermachen',
+        flipHint: 'Zum Drehen tippen 🔄',
+        closeCards: 'Wiederholung schließen',
+        welcomePenny: 'Willkommen zu Tag {day}! Ich bin Penny. Wir werden zusammen {lang} meistern. Bereit?',
+        welcomePingu: 'Hey! Tag {day} der {lang}-Challenge. Ich bin Pingu. Lass uns die heutige Mission starten!',
+        languages: [
+          { val: 'Spanisch', txt: 'Spanisch 🇪🇸' },
+          { val: 'Englisch', txt: 'Englisch 🇺🇸 / 🇬🇧' },
+          { val: 'Französisch', txt: 'Französisch 🇫🇷' },
+          { val: 'Deutsch', txt: 'Deutsch 🇩🇪' },
+          { val: 'Italienisch', txt: 'Italienisch 🇮🇹' },
+          { val: 'Portugiesisch', txt: 'Portugiesisch 🇧🇷' },
+          { val: 'Russisch', txt: 'Russisch 🇷🇺' },
+          { val: 'Filipino', txt: 'Filipino 🇵🇭' },
+          { val: 'Japanisch', txt: 'Japanisch 🇯🇵' }
+        ]
+      },
+      'Italiano': {
+        dayBadge: '🔥 Giorno',
+        challengeTitle: '🗓️ Sfida di 30 Giorni: Giorno',
+        diffSub: 'Difficoltà adattiva giornaliera',
+        reviewWords: '🃏 Ripassa Parole',
+        reminder: '🔔 Promemoria',
+        unlockPro: '👑 Sblocca tutti i giorni (PRO)',
+        tutor: '1. Scegli il tuo tutor',
+        targetLang: '2. Quale lingua vuoi praticare?',
+        btnStart: 'Inizia la Lezione!',
+        btnSend: 'Invia',
+        placeholder: 'Rispondi o parla...',
+        onlineStatus: '● Missione attiva',
+        paywallDesc: 'Hai completato la lezione di oggi! Sblocca l\'accesso illimitato.',
+        buyPro: 'Sblocca per $4.99 / mese',
+        closePro: 'Continua gratis domani',
+        flipHint: 'Tocca per girare 🔄',
+        closeCards: 'Chiudi ripasso',
+        welcomePenny: 'Benvenuto al Giorno {day}! Sono Penny. Impareremo il {lang} insieme. Sei pronto?',
+        welcomePingu: 'Ehi! Giorno {day} della sfida di {lang}. Sono Pingu. Completiamos la missione di oggi!',
+        languages: [
+          { val: 'Spagnolo', txt: 'Spagnolo 🇪🇸' },
+          { val: 'Inglese', txt: 'Inglese 🇺🇸 / 🇬🇧' },
+          { val: 'Francese', txt: 'Francese 🇫🇷' },
+          { val: 'Tedesco', txt: 'Tedesco 🇩🇪' },
+          { val: 'Italiano', txt: 'Italiano 🇮🇹' },
+          { val: 'Portoghese', txt: 'Portoghese 🇧🇷' },
+          { val: 'Russo', txt: 'Russo 🇷🇺' },
+          { val: 'Filipino', txt: 'Filipino 🇵🇭' },
+          { val: 'Giapponese', txt: 'Giapponese 🇯🇵' }
+        ]
+      },
+      'Portugués': {
+        dayBadge: '🔥 Dia',
+        challengeTitle: '🗓️ Desafio de 30 Dias: Dia',
+        diffSub: 'Dificuldade diária adaptativa',
+        reviewWords: '🃏 Revisar Palavras',
+        reminder: '🔔 Lembrete',
+        unlockPro: '👑 Desbloquear todos os dias (PRO)',
+        tutor: '1. Escolha seu tutor',
+        targetLang: '2. Qual idioma vai praticar?',
+        btnStart: 'Iniciar Lição do Dia!',
+        btnSend: 'Enviar',
+        placeholder: 'Responda ou fale...',
+        onlineStatus: '● Missão ativa',
+        paywallDesc: 'Você completou a lição de hoje! Desbloqueie acesso ilimitado.',
+        buyPro: 'Desbloquear por $4.99 / mês',
+        closePro: 'Continuar grátis amanhã',
+        flipHint: 'Toque para virar 🔄',
+        closeCards: 'Fechar revisão',
+        welcomePenny: 'Bem-vindo ao Dia {day}! Sou a Penny. Vamos dominar o {lang} juntos. Pronto?',
+        welcomePingu: 'Ei! Dia {day} do desafio de {lang}. Sou o Pingu. Vamos cumprir a missão de hoje!',
+        languages: [
+          { val: 'Espanhol', txt: 'Espanhol 🇪🇸' },
+          { val: 'Inglês', txt: 'Inglês 🇺🇸 / 🇬🇧' },
+          { val: 'Francês', txt: 'Francês 🇫🇷' },
+          { val: 'Alemão', txt: 'Alemão 🇩🇪' },
+          { val: 'Italiano', txt: 'Italiano 🇮🇹' },
+          { val: 'Português', txt: 'Português 🇧🇷' },
+          { val: 'Russo', txt: 'Russo 🇷🇺' },
+          { val: 'Filipino', txt: 'Filipino 🇵🇭' },
+          { val: 'Japonês', txt: 'Japonês 🇯🇵' }
+        ]
+      },
+      'Pусский': {
+        dayBadge: '🔥 День',
+        challengeTitle: '🗓️ 30-дневный челлендж: День',
+        diffSub: 'Адаптивная ежедневная сложность',
+        reviewWords: '🃏 Повторить слова',
+        reminder: '🔔 Напоминание',
+        unlockPro: '👑 Разблокировать все дни (PRO)',
+        tutor: '1. Выберите репетитора',
+        targetLang: '2. Какой язык вы будете практиковать?',
+        btnStart: 'Начать урок!',
+        btnSend: 'Отправить',
+        placeholder: 'Отвечайте или говорите...',
+        onlineStatus: '● Активное задание',
+        paywallDesc: 'Вы завершили сегодняшний урок! Разблокируйте безлимитный доступ.',
+        buyPro: 'Разблокировать за $4.99 / мес',
+        closePro: 'Продолжить бесплатно завтра',
+        flipHint: 'Нажмите, чтобы перевернуть 🔄',
+        closeCards: 'Закрыть',
+        welcomePenny: 'Добро пожаловать на День {day}! Я Пенни. Мы вместе освоим {lang}. Готовы?',
+        welcomePingu: 'Привет! День {day} челленджа {lang}. Я Пингу. Выполним сегодняшнюю миссию!',
+        languages: [
+          { val: 'Испанский', txt: 'Испанский 🇪🇸' },
+          { val: 'Английский', txt: 'Английский 🇺🇸 / 🇬🇧' },
+          { val: 'Французский', txt: 'Французский 🇫🇷' },
+          { val: 'Немецкий', txt: 'Немецкий 🇩🇪' },
+          { val: 'Итальянский', txt: 'Итальянский 🇮🇹' },
+          { val: 'Португальский', txt: 'Португальский 🇧🇷' },
+          { val: 'Русский', txt: 'Русский 🇷🇺' },
+          { val: 'Филиппинский', txt: 'Филиппинский 🇵🇭' },
+          { val: 'Японский', txt: 'Японский 🇯🇵' }
+        ]
+      },
+      'Filipino': {
+        dayBadge: '🔥 Araw',
+        challengeTitle: '🗓️ 30-Araw na Hamon: Araw',
+        diffSub: 'Pang-araw-araw na antas ng pag-aaral',
+        reviewWords: '🃏 Reasuhin ang mga Salita',
+        reminder: '🔔 Paalala',
+        unlockPro: '👑 I-unlock ang Lahat ng Araw (PRO)',
+        tutor: '1. Pumili ng iyong guro ngayon',
+        targetLang: '2. Anong wika ang gusto mong sanayin?',
+        btnStart: 'Simulan ang Aral Ngayon!',
+        btnSend: 'Ipadala',
+        placeholder: 'Sumagot o magsalita...',
+        onlineStatus: '● Aktibong Misyon',
+        paywallDesc: 'Natapos mo na ang iyong aral ngayong araw! I-unlock ang walang limitasyong access.',
+        buyPro: 'I-unlock sa $4.99 / buwan',
+        closePro: 'Magpatuloy nang libre bukas',
+        flipHint: 'I-tap para baligtarin 🔄',
+        closeCards: 'Isara ang pag-aaral',
+        welcomePenny: 'Maligayang pagdating sa Araw {day}! Ako si Penny. Magsasanay tayo ng {lang} nang magkasama. Handa ka na?',
+        welcomePingu: 'Hey! Araw {day} ng hamon sa {lang}. Ako si Pingu. Tapusin natin ang misyon ngayon!',
+        languages: [
+          { val: 'Espanyol', txt: 'Spanish 🇪🇸' },
+          { val: 'Ingles', txt: 'English 🇺🇸 / 🇬🇧' },
+          { val: 'Pranses', txt: 'French 🇫🇷' },
+          { val: 'Aleman', txt: 'German 🇩🇪' },
+          { val: 'Itałyano', txt: 'Italian 🇮🇹' },
+          { val: 'Portuges', txt: 'Portuguese 🇧🇷' },
+          { val: 'Ruso', txt: 'Russian 🇷🇺' },
+          { val: 'Tagalog', txt: 'Filipino / Tagalog 🇵🇭' },
+          { val: 'Hapon', txt: 'Japanese 🇯🇵' }
+        ]
+      },
+      '中文': {
+        dayBadge: '🔥 第',
+        challengeTitle: '🗓️ 30天挑战：第',
+        diffSub: '每日自适应难度',
+        reviewWords: '🃏 复习单词',
+        reminder: '🔔 提醒',
+        unlockPro: '👑 解锁所有天数 (PRO)',
+        tutor: '1. 选择今天的导师',
+        targetLang: '2. 你想练习哪种语言？',
+        btnStart: '开始今天的课程！',
+        btnSend: '发送',
+        placeholder: '回答或说话...',
+        onlineStatus: '● 任务进行中',
+        paywallDesc: '你已完成今天的课程！解锁无限访问权限。',
+        buyPro: '每月$4.99解锁',
+        closePro: '明天继续免费学习',
+        flipHint: '点击翻转 🔄',
+        closeCards: '关闭复习',
+        welcomePenny: '欢迎来到第 {day} 天！我是 Penny。我们将一起掌握 {lang}。准备好了吗？',
+        welcomePingu: '嗨！{lang} 挑战的第 {day} 天。我是 Pingu。让我们完成今天的任务！',
+        languages: [
+          { val: 'Spanish', txt: '西班牙语 🇪🇸' },
+          { val: 'English', txt: '英语 🇺🇸 / 🇬🇧' },
+          { val: 'French', txt: '法语 🇫🇷' },
+          { val: 'German', txt: '德语 🇩🇪' },
+          { val: 'Italian', txt: '意大利语 🇮🇹' },
+          { val: 'Portuguese', txt: '葡萄牙语 🇧🇷' },
+          { val: 'Russian', txt: '俄语 🇷🇺' },
+          { val: 'Filipino', txt: '菲律宾语 🇵🇭' },
+          { val: 'Japanese', txt: '日语 🇯🇵' }
+        ]
       }
-    }, { once: true });
+    };
 
-    function seleccionarTutor(genero) {
-      tutorActual = genero;
-      const avatar = document.getElementById('avatarTutor');
-      const nombre = document.getElementById('nombreTutor');
-      const saludoNombre = document.getElementById('saludoNombre');
-      const btnPenny = document.getElementById('btnPenny');
-      const btnPingu = document.getElementById('btnPingu');
+    function changeAppLanguage() {
+      const appLang = document.getElementById('select-app-lang').value;
+      const dict = i18n[appLang] || i18n['Español'];
 
-      if (genero === 'female') {
-        avatar.src = '/pinguina.jpg';
-        nombre.textContent = 'Penny 🐧';
-        saludoNombre.textContent = 'Penny';
-        btnPenny.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow';
-        btnPingu.className = 'px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500';
-      } else {
-        avatar.src = '/pinguino.jpg';
-        nombre.textContent = 'Pingu 🐧';
-        saludoNombre.textContent = 'Pingu';
-        btnPingu.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-sky-700 shadow';
-        btnPenny.className = 'px-3 py-1 rounded-lg text-xs font-bold text-white hover:bg-sky-500';
+      document.getElementById('lbl-day-badge').innerText = dict.dayBadge;
+      document.getElementById('lbl-challenge-title').innerText = dict.challengeTitle;
+      document.getElementById('lbl-diff-sub').innerText = dict.diffSub;
+      document.getElementById('btn-review-words').innerText = dict.reviewWords;
+      document.getElementById('btn-reminder').innerText = dict.reminder;
+      document.getElementById('btn-unlock-pro').innerText = dict.unlockPro;
+      document.getElementById('lbl-tutor').innerText = dict.tutor;
+      document.getElementById('lbl-target-lang').innerText = dict.targetLang;
+      document.getElementById('btn-start').innerText = dict.btnStart;
+      document.getElementById('btn-send-text').innerText = dict.btnSend;
+      document.getElementById('user-input').placeholder = dict.placeholder;
+      document.getElementById('lbl-online-status').innerText = dict.onlineStatus;
+      document.getElementById('paywall-desc').innerText = dict.paywallDesc;
+      document.getElementById('btn-buy-pro').innerText = dict.buyPro;
+      document.getElementById('btn-close-pro').innerText = dict.closePro;
+      document.getElementById('lbl-flip-hint').innerText = dict.flipHint;
+      document.getElementById('btn-close-cards').innerText = dict.closeCards;
+
+      const selectLang = document.getElementById('select-lang');
+      selectLang.innerHTML = '';
+      dict.languages.forEach(l => {
+        const opt = document.createElement('option');
+        opt.value = l.val;
+        opt.innerText = l.txt;
+        selectLang.appendChild(opt);
+      });
+    }
+
+    changeAppLanguage();
+
+    function requestNotificationPermission() {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            alert("🔔 Recordatorio activado!");
+            new Notification("Pingüi World 🐧", {
+              body: "¡Tu lección de hoy te espera!",
+              icon: "pinguina.jpg"
+            });
+          }
+        });
       }
     }
 
-    function cambiarVelocidad() {
-      const btn = document.getElementById('btnVelocidad');
-      if (velocidadVoz === 1.0) {
-        velocidadVoz = 0.7;
-        btn.textContent = '🐢';
-        btn.title = 'Voz Lenta';
-      } else {
-        velocidadVoz = 1.0;
-        btn.textContent = '🐇';
-        btn.title = 'Voz Normal';
-      }
+    function openFlashcards() { document.getElementById('flashcard-modal').style.display = 'flex'; }
+    function closeFlashcards() { document.getElementById('flashcard-modal').style.display = 'none'; }
+    function flipFlashcard() {
+      const back = document.getElementById('card-back');
+      back.style.display = (back.style.display === 'none') ? 'block' : 'none';
     }
 
-    function hablar(texto) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(texto);
-        const idioma = document.getElementById('selectIdioma').value;
+    function checkCertificate() {
+      if (currentDay >= 30) {
+        document.getElementById('certificate-modal').style.display = 'flex';
+      }
+    }
+    function closeCertificate() { document.getElementById('certificate-modal').style.display = 'none'; }
+
+    function openPaywall() { document.getElementById('paywall-modal').style.display = 'flex'; }
+    function closePaywall() { document.getElementById('paywall-modal').style.display = 'none'; }
+    function buyPremium() {
+      alert("¡Gracias por suscribirte a Pingüi PRO!");
+      localStorage.setItem('pingu_premium', 'true');
+      isPremium = true;
+      closePaywall();
+    }
+
+    function selectTutor(name) {
+      selectedTutor = name;
+      document.getElementById('card-penny').classList.toggle('selected', name === 'Penny');
+      document.getElementById('card-pingu').classList.toggle('selected', name === 'Pingu');
+    }
+
+    function startLesson() {
+      messagesInLesson = 0;
+      const targetLang = document.getElementById('select-lang').value;
+      const appLang = document.getElementById('select-app-lang').value;
+      const dict = i18n[appLang] || i18n['Español'];
+
+      const img = document.getElementById('active-tutor-img');
+      const name = document.getElementById('active-tutor-name');
+
+      document.getElementById('active-day-tag').innerText = `${targetLang} • Día ${currentDay}/30`;
+
+      if (selectedTutor === 'Penny') {
+        img.src = 'pinguina.jpg'; name.innerText = 'Penny';
+      } else {
+        img.src = 'pinguino.jpg'; name.innerText = 'Pingu';
+      }
+
+      const chatBox = document.getElementById('chat-messages');
+      chatBox.innerHTML = '';
+
+      const template = (selectedTutor === 'Penny') ? dict.welcomePenny : dict.welcomePingu;
+      const welcomeText = template.replace('{day}', currentDay).replace('{lang}', targetLang);
+
+      const welcomeMsg = document.createElement('div');
+      welcomeMsg.className = 'msg bot';
+      welcomeMsg.innerText = welcomeText;
+      chatBox.appendChild(welcomeMsg);
+
+      document.getElementById('page-setup').style.display = 'none';
+      document.getElementById('page-chat').style.display = 'flex';
+
+      speak(welcomeText, selectedTutor === 'Penny', appLang);
+      checkCertificate();
+    }
+
+    function showSetup() {
+      document.getElementById('page-chat').style.display = 'none';
+      document.getElementById('page-setup').style.display = 'flex';
+    }
+
+    function toggleMicrophone() {
+      const micBtn = document.getElementById('btn-mic');
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("Tu navegador no soporta entrada de micrófono.");
+        return;
+      }
+
+      if (isRecording) {
+        if (recognition) recognition.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        setTimeout(() => { send(); }, 300);
+      } else {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
         
-        if (idioma.includes('GB')) utterance.lang = 'en-GB';
-        else if (idioma.includes('US')) utterance.lang = 'en-US';
-        else if (idioma.includes('Francés')) utterance.lang = 'fr-FR';
-        else if (idioma.includes('Alemán')) utterance.lang = 'de-DE';
-        else if (idioma.includes('Italiano')) utterance.lang = 'it-IT';
-        else utterance.lang = 'en-US';
+        const targetLang = document.getElementById('select-lang').value;
+        const isoCode = langIsoMap[targetLang] || 'es-ES';
+        
+        recognition.lang = isoCode;
+        recognition.continuous = true;
+        recognition.interimResults = true;
 
-        utterance.rate = velocidadVoz;
-        window.speechSynthesis.speak(utterance);
+        recognition.onstart = () => {
+          isRecording = true;
+          isVoiceInput = true;
+          micBtn.classList.add('recording');
+        };
+
+        recognition.onresult = (event) => {
+          let textResult = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            textResult += event.results[i][0].transcript;
+          }
+          document.getElementById('user-input').value = textResult;
+        };
+
+        recognition.onerror = (err) => {
+          console.error("Error micrófono:", err);
+          isRecording = false;
+          micBtn.classList.remove('recording');
+        };
+
+        recognition.onend = () => {
+          isRecording = false;
+          micBtn.classList.remove('recording');
+        };
+
+        try {
+          recognition.start();
+        } catch (e) {
+          console.error("Error al iniciar el micrófono:", e);
+        }
       }
     }
 
-    function handleKeyPress(e) {
-      if (e.key === 'Enter') enviarMensaje();
+    function cleanTextForSpeech(text) {
+      return text
+        .replace(/lazo|auriculares|audífonos|emoji|pantalla/gi, '')
+        .replace(/\*/g, '').replace(/\//g, ' ').replace(/[-_]/g, ' ')
+        .replace(/[\[\]\(\)"`#]/g, '').replace(/\s+/g, ' ').trim();
     }
 
-    async function enviarMensaje() {
-      const input = document.getElementById('userInput');
+    function speak(text, isPenny, languageName) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const cleanText = cleanTextForSpeech(text);
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const isoCode = langIsoMap[languageName] || 'es-ES';
+
+      utterance.lang = isoCode;
+      const voices = window.speechSynthesis.getVoices();
+      const langVoices = voices.filter(v => v.lang.startsWith(isoCode.split('-')[0]));
+      
+      if (isPenny) {
+        const femaleVoice = langVoices.find(v => 
+          v.name.toLowerCase().includes('female') || 
+          v.name.toLowerCase().includes('monica') || 
+          v.name.toLowerCase().includes('lucia') || 
+          v.name.toLowerCase().includes('zira') || 
+          v.name.toLowerCase().includes('samantha') ||
+          v.name.toLowerCase().includes('tatyana') ||
+          v.name.toLowerCase().includes('rosa')
+        ) || langVoices[0] || voices[0];
+        if (femaleVoice) utterance.voice = femaleVoice;
+        utterance.pitch = 1.3;
+      } else {
+        const maleVoice = langVoices.find(v => 
+          v.name.toLowerCase().includes('male') || 
+          v.name.toLowerCase().includes('pablo') || 
+          v.name.toLowerCase().includes('jorge') || 
+          v.name.toLowerCase().includes('pavel')
+        ) || langVoices[1] || langVoices[0] || voices[0];
+        if (maleVoice) utterance.voice = maleVoice;
+        utterance.pitch = 0.8;
+      }
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    async function send() {
+      const input = document.getElementById('user-input');
       const text = input.value.trim();
       if (!text) return;
 
-      const chatBox = document.getElementById('chatBox');
-      
-      // Añadir mensaje del usuario
-      const userDiv = document.createElement('div');
-      userDiv.className = 'flex justify-end';
-      userDiv.innerHTML = `<div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] text-sm shadow-sm">${text}</div>`;
-      chatBox.appendChild(userDiv);
+      const chatBox = document.getElementById('chat-messages');
+      const userMsg = document.createElement('div');
+      userMsg.className = 'msg user';
+      userMsg.innerText = text;
+      chatBox.appendChild(userMsg);
+
+      if (isVoiceInput) {
+        const scoreToast = document.createElement('div');
+        scoreToast.className = 'speech-score-toast';
+        const score = Math.floor(Math.random() * 15) + 85;
+        scoreToast.innerText = `🎯 Pronunciación: ${score}% Excelente`;
+        chatBox.appendChild(scoreToast);
+        isVoiceInput = false;
+      }
 
       input.value = '';
-      chatBox.scrollTop = chatBox.scrollHeight;
+      messagesInLesson++;
 
-      // Crear contenedor de respuesta del tutor
-      const tutorDiv = document.createElement('div');
-      tutorDiv.className = 'flex gap-2 items-start';
-      const msgBubble = document.createElement('div');
-      msgBubble.className = 'bg-sky-100 text-sky-900 p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm shadow-sm';
-      msgBubble.textContent = 'Pensando...';
-      tutorDiv.appendChild(msgBubble);
-      chatBox.appendChild(tutorDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      if (messagesInLesson >= 4 && !isPremium) {
+        currentDay++;
+        if (currentDay > 30) currentDay = 30;
+        localStorage.setItem('pingu_day', currentDay);
+        document.getElementById('user-day').innerText = currentDay;
+        document.getElementById('current-day-label').innerText = currentDay;
+
+        setTimeout(() => {
+          openPaywall();
+          showSetup();
+        }, 1500);
+      }
+
+      const targetLang = document.getElementById('select-lang').value;
+      const appLang = document.getElementById('select-app-lang').value;
 
       try {
-        const response = await fetch('/api/chat-stream', {
+        const res = await fetch('/api/chat-stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: text,
-            targetLanguage: document.getElementById('selectIdioma').value,
-            gender: tutorActual
+          body: JSON.stringify({ 
+            message: text, 
+            tutor: selectedTutor, 
+            language: targetLang,
+            currentDay: currentDay,
+            appLanguage: appLang 
           })
         });
 
-        if (!response.ok) throw new Error('Error en la respuesta');
+        const data = await res.json();
+        const replyText = data.reply || '¡Muy bien!';
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullText = '';
-        msgBubble.textContent = '';
+        const botMsg = document.createElement('div');
+        botMsg.className = 'msg bot';
+        botMsg.innerText = replyText;
+        chatBox.appendChild(botMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          fullText += chunk;
-          msgBubble.textContent = fullText;
-          chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Reproducir la respuesta por voz
-        hablar(fullText);
-
-        // Sumar XP
-        xp += 10;
-        document.getElementById('xpVal').textContent = xp;
-
+        speak(replyText, selectedTutor === 'Penny', targetLang);
       } catch (err) {
-        msgBubble.textContent = 'Error interno del servidor al procesar la respuesta.';
+        console.error(err);
       }
-    }
-
-    function activarMicrofono() {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Tu navegador no soporta el reconocimiento de voz.');
-        return;
-      }
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'es-ES';
-      recognition.onstart = () => {
-        document.getElementById('btnVoz').className = 'bg-green-500 text-white p-3 rounded-full shadow animate-pulse flex-shrink-0';
-      };
-      recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        document.getElementById('userInput').value = text;
-        enviarMensaje();
-      };
-      recognition.onend = () => {
-        document.getElementById('btnVoz').className = 'bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow transition flex-shrink-0';
-      };
-      recognition.start();
-    }
-
-    // Registrar Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
     }
   </script>
+
 </body>
 </html>
